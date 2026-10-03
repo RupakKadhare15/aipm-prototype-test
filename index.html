@@ -26,7 +26,7 @@ button{font-family:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offset:2px}
 
 /* ---------- page layout ---------- */
-.stage{display:flex;gap:28px;align-items:flex-start;justify-content:center;padding:16px;min-height:100%}
+.stage{display:flex;gap:28px;align-items:center;justify-content:center;padding:16px;min-height:100vh}
 .phone-slot{flex:none;position:relative}
 .phone-scale{transform-origin:top left;position:absolute;top:0;left:0}
 
@@ -87,7 +87,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offse
   background:linear-gradient(170deg,rgba(52,44,78,.94) 0%,rgba(33,29,49,.95) 55%,rgba(28,25,40,.96) 100%);
   box-shadow:inset 0 0 0 1px rgba(176,150,255,.22),0 20px 50px rgba(0,0,0,.45);
   transform:translateY(12px) scale(.97);transition:transform .32s cubic-bezier(.2,.9,.3,1.2)}
-.s1card::before,.permcard::before{content:"";position:absolute;right:-60px;top:-40px;width:240px;height:200px;background:radial-gradient(closest-side,rgba(140,95,255,.28),transparent);pointer-events:none}
+.s1card::before,.permcard::before{content:"absolute";right:-60px;top:-40px;width:240px;height:200px;background:radial-gradient(closest-side,rgba(140,95,255,.28),transparent);pointer-events:none}
 .layer.on .s1card,.layer.on .permcard{transform:none}
 .s1card{top:332px}
 .s1card h2{font-size:20.8px;line-height:27.5px;font-weight:600;margin:10px 0 0;letter-spacing:-.015em}
@@ -199,8 +199,46 @@ button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offse
 .fnav span{width:28px;height:28px;display:grid;place-items:center}
 .fnav .me{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#fca5a5,#7c3aed)}
 
+
+/* ---------- Loop (short video) ---------- */
+#feed-loop{background:#0d0907}
+.lp-bg{position:absolute;inset:0;width:100%;height:100%}
+.lp-top{position:absolute;top:56px;left:16px;right:16px;height:40px;display:flex;align-items:center;justify-content:space-between}
+.lp-rail{position:absolute;right:10px;bottom:150px;width:58px;display:flex;flex-direction:column;align-items:center;gap:18px;font-size:12.5px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.lp-rail div{display:flex;flex-direction:column;align-items:center;gap:3px}
+.lp-av{position:relative;margin-bottom:6px}
+.lp-av span{width:46px;height:46px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;font-size:22px;background:linear-gradient(160deg,#fde68a,#c2410c)}
+.lp-av b{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#f97316;display:grid;place-items:center;font-size:14px;line-height:1}
+.lp-info{position:absolute;left:14px;right:84px;bottom:112px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.lp-who{font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px}
+.lp-who span{font-size:12.5px;font-weight:600;border:1px solid rgba(255,255,255,.8);border-radius:8px;padding:3px 9px}
+.lp-info p{margin:7px 0 0;font-size:14px;line-height:19px}
+.lp-info small{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:13px}
+.lp-prog{position:absolute;left:0;right:0;bottom:84px;height:2.5px;background:rgba(255,255,255,.25)}
+.lp-prog i{display:block;width:38%;height:100%;background:#fbbf24}
+.lp-nav{background:rgba(0,0,0,.72);border-top:0;align-items:flex-start}
+/* ---------- Wisp (messaging) ---------- */
+#feed-wisp{background:#0e0e12}
+.ws-lbl{position:absolute;top:166px;left:16px;font-size:13px;font-weight:600;color:#9a9aa6}
+.ws-today{position:absolute;top:190px;left:14px;right:0;display:flex;gap:14px;overflow:hidden}
+.ws-today div{flex:none;width:64px;text-align:center}
+.ws-today span{display:grid;place-items:center;width:62px;height:62px;border-radius:50%;font-size:26px;box-shadow:0 0 0 2.5px #0e0e12,0 0 0 5px #fb7185}
+.ws-today small{display:block;font-size:12px;margin-top:8px;color:#e8e8ee}
+.ws-list{position:absolute;top:292px;left:0;right:0}
+.ws-row{display:flex;align-items:center;gap:13px;height:70px;padding:0 16px;border-bottom:1px solid #1b1b22;position:relative}
+.ws-row .av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;flex:none}
+.ws-row b{display:block;font-size:15.5px;font-weight:600}
+.ws-row small{display:flex;align-items:center;gap:6px;font-size:13px;color:#a1a1ad;margin-top:3px}
+.ws-row .sq{width:10px;height:10px;border-radius:2.5px;background:#fb7185}
+.ws-row .sq.ch{background:#60a5fa}
+.ws-row .sq.op{background:none;box-shadow:inset 0 0 0 1.6px #fb7185}
+.ws-row .sq.op.ch{box-shadow:inset 0 0 0 1.6px #60a5fa}
+.ws-row em{margin-left:auto;font-style:normal;font-size:12px;color:#85858f}
+.ws-row .dot{position:absolute;right:16px;top:44px;width:8px;height:8px;border-radius:50%;background:#fb7185}
+#feed-wisp .fnav{align-items:flex-start;padding-top:6px}
+
 /* notification banner (slide 4) */
-.banner{position:absolute;top:55px;left:6px;right:6px;border-radius:26px;padding:12px 10px 11px 10px;z-index:40;
+.banner{position:absolute;top:55px;left:6px;right:6px;border-radius:26px;z-index:41;padding:12px 10px 11px 10px;z-index:40;
   background:linear-gradient(160deg,rgba(54,46,76,.94),rgba(30,28,42,.95) 55%,rgba(26,25,36,.96));
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 40px rgba(0,0,0,.5);
   transform:translateY(-220px);transition:transform .45s cubic-bezier(.2,.9,.25,1.1)}
@@ -296,7 +334,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offse
 .intent7 p{margin:4px 0 0;font-size:14.6px;line-height:19px}
 .simrow{position:absolute;left:9px;right:9px;bottom:9px;height:58px;border-radius:15px;background:rgba(255,255,255,.06);display:flex;align-items:center;gap:14px;padding:0 14px 0 13px;border:0;color:#c9c5d5;text-align:left;font-size:13.6px;line-height:18px}
 .simrow .cc{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);display:grid;place-items:center;flex:none}
-.b-cont{position:absolute;left:24px;right:24px;top:716px;height:48px;border-radius:15px;border:0;color:#fff;font-size:15.5px;font-weight:500;
+.b-cont{position:absolute;left:24px;right:24px;top:740px;height:48px;border-radius:15px;border:0;color:#fff;font-size:15.5px;font-weight:500;
   background:linear-gradient(90deg,#6a3cf6,#5b2ee6);display:flex;align-items:center;justify-content:center}
 .b-cont svg{position:absolute;right:18px}
 .b-rem{position:absolute;left:24px;right:24px;top:775px;height:51px;border-radius:15px;border:0;color:#e8e6ef;font-size:14.6px;
@@ -335,20 +373,25 @@ button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offse
 .log li:last-child{border:0}
 .log time{color:var(--ink-2);margin-right:6px;font-variant-numeric:tabular-nums}
 .prow{display:flex;gap:6px;margin-top:8px}
-.showpanel{position:fixed;right:14px;bottom:14px;z-index:5;display:none}
+.showpanel{position:fixed;right:14px;top:calc(14px + env(safe-area-inset-top,0px));z-index:20;display:none;align-items:center;gap:7px;box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 0 0 1px var(--line)}
+.showpanel svg{flex:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:25;display:none}
 body.nopanel .panel{display:none}
-body.nopanel .showpanel{display:block}
+body.nopanel .showpanel{display:inline-flex}
 
 @media (max-width:820px){
-  .stage{flex-direction:column;align-items:center;padding:10px}
-  .panel{width:100%;max-width:440px}
+  .stage{padding:58px 10px 10px;align-items:flex-start}
+  .showpanel{left:50%;right:auto;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px))}
+  .panel{position:fixed;left:0;right:0;bottom:0;width:auto;max-height:80vh;overflow:auto;z-index:30;border-radius:22px 22px 0 0;
+    padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.35)}
+  body:not(.nopanel) .scrim{display:block}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition-duration:.01ms !important}
 }
 </style>
 </head>
-<body>
+<body class="nopanel">
 <div class="stage">
   <div class="phone-slot" id="slot">
     <div class="phone-scale" id="scaler">
@@ -465,9 +508,9 @@ body.nopanel .showpanel{display:block}
           </div>
 
           <!-- ===== FEED (original social app) ===== -->
-          <div class="layer" id="feed">
+          <div class="layer appview" id="feed" data-app="orbit">
             <div class="fhead">
-              <div class="wordmark"><svg viewBox="0 0 44 44"><use href="#i-Instagram"/></svg><span class="app-name-lc">Instagram</span></div>
+              <div class="wordmark"><svg viewBox="0 0 44 44"><use href="#i-orbit"/></svg><span class="app-name-lc">instagram</span></div>
               <div style="display:flex;gap:18px">
                 <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M12 20.5s-8-4.7-8-10.6A4.4 4.4 0 0 1 12 7.4a4.4 4.4 0 0 1 8 2.5c0 5.9-8 10.6-8 10.6z"/></svg>
                 <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>
@@ -503,21 +546,79 @@ body.nopanel .showpanel{display:block}
               <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="#fff"/></svg></span>
               <span><i class="me"></i></span>
             </div>
+          </div>
 
-            <!-- 4 REMINDER BANNER -->
+          <!-- ===== LOOP (original short-video app) ===== -->
+          <div class="layer appview" id="feed-loop" data-app="loop">
+            <svg class="lp-bg" viewBox="0 0 393 880" preserveAspectRatio="xMidYMid slice"><use href="#i-noodles"/></svg>
+            <div class="lp-top"><div class="wordmark"><svg viewBox="0 0 44 44"><use href="#i-loop"/></svg>youtube shorts</div>
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></div>
+            <div class="lp-rail">
+              <div class="lp-av"><span>👩‍🍳</span><b>+</b></div>
+              <div><svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M12 20.5s-8-4.7-8-10.6A4.4 4.4 0 0 1 12 7.4a4.4 4.4 0 0 1 8 2.5c0 5.9-8 10.6-8 10.6z"/></svg>48.2K</div>
+              <div><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-.9 0-1.8-.1-2.6-.3L5 19.5l1-3.4C4.5 14.8 3.5 13 3.5 11c0-3.9 3.8-7 8.5-7z"/></svg>1,204</div>
+              <div><svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M6 3.5h12v17l-6-4.5-6 4.5z"/></svg>3,918</div>
+              <div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 12l16-8-6 17-3-7z"/></svg>Share</div>
+            </div>
+            <div class="lp-info">
+              <div class="lp-who">@kitchen.notes <span>Follow</span></div>
+              <p>10-minute garlic noodles for busy weeknights 🍜</p>
+              <small><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M9 17.5V6.5l10-2.5v11"/><circle cx="6.8" cy="17.5" r="2.6"/><circle cx="16.8" cy="15" r="2.6"/></svg>Original sound by kitchen.notes</small>
+            </div>
+            <div class="lp-prog"><i></i></div>
+            <div class="fnav lp-nav">
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3.2-6 6.5-6s6 2.4 6.5 6M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.6c1.8.9 2.8 2.9 3 5.4"/></svg></span>
+              <span><svg width="38" height="28" viewBox="0 0 38 28"><rect x="1" y="1" width="36" height="26" rx="9" fill="url(#g-loop)"/><path d="M19 8v12M13 14h12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span>
+              <span><i class="me"></i></span>
+            </div>
+          </div>
+
+          <!-- ===== WISP (original messaging app) ===== -->
+          <div class="layer appview" id="feed-wisp" data-app="wisp">
+            <div class="fhead"><div class="wordmark"><svg viewBox="0 0 44 44"><use href="#i-wisp"/></svg>snapchat</div>
+              <div style="display:flex;gap:18px">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 20c.6-3.8 3.4-6 7-6 1.5 0 2.8.4 3.9 1.1M19 13v6M16 16h6"/></svg>
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M4 20l1-4.5L15.8 4.7a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8L8.5 19 4 20z"/></svg>
+              </div></div>
+            <div class="fcompose" style="padding-left:14px"><svg style="margin-left:0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b8b97" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Search friends</div>
+            <div class="ws-lbl">Today’s photos</div>
+            <div class="ws-today">
+              <div><span style="background:linear-gradient(160deg,#fbcfe8,#be185d)">🏖️</span><small>maya</small></div>
+              <div><span style="background:linear-gradient(160deg,#c7d2fe,#4338ca)">🎧</span><small>jonas.k</small></div>
+              <div><span style="background:linear-gradient(160deg,#fde68a,#d97706)">🍕</span><small>priya</small></div>
+              <div><span style="background:linear-gradient(160deg,#bbf7d0,#15803d)">🌿</span><small>leo.m</small></div>
+              <div><span style="background:linear-gradient(160deg,#fecaca,#b91c1c)">🎸</span><small>sara</small></div>
+            </div>
+            <div class="ws-list">
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#fbcfe8,#be185d)">🏖</span><div><b>Maya</b><small><i class="sq"></i>New photo</small></div><em>2m</em><i class="dot"></i></div>
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#c7d2fe,#4338ca)">🎧</span><div><b>Jonas</b><small><i class="sq ch"></i>New message</small></div><em>8m</em><i class="dot"></i></div>
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#fde68a,#d97706)">🍕</span><div><b>Study group</b><small><i class="sq ch"></i>Priya: see you at 7?</small></div><em>15m</em><i class="dot"></i></div>
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#bbf7d0,#15803d)">🌿</span><div><b>Leo</b><small><i class="sq op"></i>Opened</small></div><em>1h</em></div>
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#fecaca,#b91c1c)">🎸</span><div><b>Sara</b><small><i class="sq op ch"></i>Delivered</small></div><em>3h</em></div>
+              <div class="ws-row"><span class="av" style="background:linear-gradient(160deg,#a5f3fc,#0e7490)">⛵</span><div><b>Noah</b><small><i class="sq op"></i>Opened</small></div><em>Yesterday</em></div>
+            </div>
+            <div class="fnav">
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-.9 0-1.8-.1-2.6-.3L5 19.5l1-3.4C4.5 14.8 3.5 13 3.5 11c0-3.9 3.8-7 8.5-7z"/></svg></span>
+              <span><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="none" stroke="#fff" stroke-width="3"/><circle cx="22" cy="22" r="13" fill="url(#g-wisp)"/></svg></span>
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3.2-6 6.5-6s6 2.4 6.5 6M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.6c1.8.9 2.8 2.9 3 5.4"/></svg></span>
+            </div>
+          </div>
+
+          <!-- 4 REMINDER BANNER (shared by all apps) -->
             <div class="banner" id="banner" role="alert">
-              <div class="bn-top">
-                <svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg>
-                <div style="flex:1;min-width:0">
-                  <div class="t1">Focus Assistant<small>now</small></div>
-                  <h3>1 minute left on <span class="app-name">Instagram</span>.</h3>
-                  <p id="bnText">You came here to check notifications, reply to friends and briefly check what’s new. Still on track?</p>
-                </div>
+            <div class="bn-top">
+              <svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg>
+              <div style="flex:1;min-width:0">
+                <div class="t1">Focus Assistant<small>now</small></div>
+                <h3>1 minute left on <span class="app-name">Instagram</span>.</h3>
+                <p id="bnText">You came here to check notifications, reply to friends and briefly check what’s new. Still on track?</p>
               </div>
-              <div class="bn-btns">
-                <button class="bn-done" data-act="bnDone">I’m done</button>
-                <button class="bn-more" data-act="bnMore">Need more time</button>
-              </div>
+            </div>
+            <div class="bn-btns">
+              <button class="bn-done" data-act="bnDone">I’m done</button>
+              <button class="bn-more" data-act="bnMore">Need more time</button>
             </div>
           </div>
 
@@ -527,13 +628,12 @@ body.nopanel .showpanel{display:block}
             <div class="hg"><svg width="66" height="66" viewBox="0 0 66 66"><use href="#i-hourglass"/></svg></div>
             <h1 class="ab cx" style="top:289px">Your planned<br><span class="lav"><span class="app-name">Instagram</span> time is up.</span></h1>
             <div class="intent" style="top:371px;height:99px">
-              <svg class="oico" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg>
+              <svg class="oico" viewBox="0 0 44 44"><use data-appicon href="#i-orbit"/></svg>
               <div><div class="lbl">Your intention</div><p class="intent-long">You opened Instagram to check notifications, reply to friends and briefly check what’s new.</p></div>
             </div>
             <div class="ab cx" style="top:494px;font-size:16.5px;font-weight:600">What would you like to do now?</div>
             <button class="opt" style="top:532px" data-act="s5Done"><span class="tl"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16.2 9.4"/></svg></span><span><b>I’m finished</b><small>Close <span class="app-name">Instagram</span> for now.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
             <button class="opt hi" style="top:610px" data-act="s5More"><span class="tl"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2.2"/></svg></span><span><b>I need more time</b><small>Set an extension (e.g. 5 or 10 min).</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
-            <button class="opt" style="top:689px" data-act="s5Cont"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M9 6h9v9"/></svg></span><span><b>I intentionally want to continue</b><small>Let me keep using <span class="app-name">Instagram</span>.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
             <div class="ffoot" style="top:820px"><svg width="26" height="28" viewBox="0 0 24 26"><use href="#i-leaf"/></svg><div><b>You’re in control.</b><br>This is here to help you use social media more intentionally.</div></div>
           </div>
 
@@ -541,7 +641,7 @@ body.nopanel .showpanel{display:block}
           <div class="layer fa s6" id="s6">
             <div class="fahead" style="top:63px"><svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg><b>Focus Assistant</b><button class="xbtn" data-act="s6X" aria-label="Dismiss"><svg viewBox="0 0 24 24" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>
             <div class="pz"><div class="ring a"></div><div class="ring b2"></div>
-              <svg class="big" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg>
+              <svg class="big" viewBox="0 0 44 44"><use data-appicon href="#i-orbit"/></svg>
               <div class="pb"><svg width="12" height="13" viewBox="0 0 12 13"><rect x="1" y="1" width="3.3" height="11" rx="1.2" fill="#d8c8ff"/><rect x="7.7" y="1" width="3.3" height="11" rx="1.2" fill="#d8c8ff"/></svg></div>
             </div>
             <h1 class="ab cx" style="top:228px;font-size:26.5px;line-height:33.5px"><span class="app-name">Instagram</span> is paused<br><span class="lav">for now.</span></h1>
@@ -557,7 +657,6 @@ body.nopanel .showpanel{display:block}
             <div class="ab cx" style="top:567px;font-size:14px;color:#a5a1b5">Tap to speak</div>
             <button class="opt" style="top:596px" data-act="s6Explain"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-1 0-2-.1-2.9-.4L4.5 19.5l1.2-3.6C4.3 14.6 3.5 12.9 3.5 11c0-3.9 3.8-7 8.5-7z"/></svg></span><span><b>Explain why I need more time</b><small>Tell me your reason and I’ll decide.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
             <button class="opt" style="top:666px" data-act="s6Close"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span><span><b>Close <span class="app-name">Instagram</span></b><small>I’m done for now.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
-            <button class="opt hi" style="top:735px" data-act="s6Cont"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg></span><span><b>Continue intentionally</b><small>I still want to use <span class="app-name">Instagram</span>.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
             <div class="ffoot" style="top:823px"><svg width="26" height="28" viewBox="0 0 24 26"><use href="#i-leaf"/></svg><div>This is a temporary pause to help you stay aligned<br>with your goals. You’re in control.</div></div>
           </div>
 
@@ -576,11 +675,10 @@ body.nopanel .showpanel{display:block}
               <p>Your <span class="app-name">Instagram</span> session has been<br>extended by 5 minutes.</p>
             </div>
             <div class="intent7 fadein" id="intent7">
-              <div class="top"><svg class="oico" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg><div><div class="lbl">YOUR ORIGINAL INTENTION</div><p class="intent-cap">Check notifications, reply to friends and briefly check what’s new.</p></div></div>
+              <div class="top"><svg class="oico" viewBox="0 0 44 44"><use data-appicon href="#i-orbit"/></svg><div><div class="lbl">YOUR ORIGINAL INTENTION</div><p class="intent-cap">Check notifications, reply to friends and briefly check what’s new.</p></div></div>
               <button class="simrow" id="simRow" data-act="simInfo"><span class="cc"><svg width="17" height="17" viewBox="0 0 24 24"><rect x="3" y="12" width="4.2" height="9" rx="1.6" fill="#e3e0ec"/><rect x="9.9" y="7.5" width="4.2" height="13.5" rx="1.6" fill="#e3e0ec"/><rect x="16.8" y="3" width="4.2" height="18" rx="1.6" fill="#e3e0ec"/></svg></span><span>Similar sessions usually take<br>8–10 minutes.</span><svg style="margin-left:auto" width="9" height="15" viewBox="0 0 10 17" fill="none" stroke="#a5a1b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
             </div>
             <button class="b-cont fadein" id="contBtn" data-act="s7Cont">Continue on&nbsp;<span class="app-name">Instagram</span><svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
-            <button class="b-rem fadein" id="remBtn" data-act="s7Rem"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e8e6ef" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Set a reminder for 5 minutes</button>
           </div>
 
           <div class="toast" id="toast"><svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg><span id="toastTxt"></span></div>
@@ -593,8 +691,14 @@ body.nopanel .showpanel{display:block}
   <!-- ===== facilitator panel ===== -->
   <aside class="panel" aria-label="Study controls">
     <div class="ptop">
-      <div><h2>Study controls</h2><p class="hint">Tap through the phone like a participant, or jump to any step. Press F to hide this panel.</p></div>
-      <button class="pbtn" data-act="hidePanel">Hide</button>
+      <div><h2>Study controls</h2><p class="hint">Tap through the phone like a participant, or jump to any step. Press F to open or close this panel.</p></div>
+      <button class="pbtn" data-act="hidePanel">Close</button>
+    </div>
+    <h3>App being opened</h3>
+    <div class="seg" id="appSeg">
+      <button class="pbtn on" data-pick="orbit">Instagram</button>
+      <button class="pbtn" data-pick="loop">Youtube shorts</button>
+      <button class="pbtn" data-pick="wisp">Snapchat</button>
     </div>
     <h3>Flow</h3>
     <ul class="flow" id="flowList"></ul>
@@ -605,23 +709,21 @@ body.nopanel .showpanel{display:block}
       <button class="pbtn on" data-mode="extend">Extend by 5 min</button>
       <button class="pbtn" data-mode="goal">Remind of goal</button>
     </div>
-    <h3>Ask the participant: was the timing too early, about right or too late?</h3>
-    <div class="rate" id="rate4"><div>After the 1-minute reminder (step 4)</div><div class="seg" data-rate="Reminder timing"><button class="pbtn">Too early</button><button class="pbtn">About right</button><button class="pbtn">Too late</button></div></div>
-    <div class="rate" id="rate5"><div>After the time’s-up prompt (step 5)</div><div class="seg" data-rate="Time’s-up timing"><button class="pbtn">Too early</button><button class="pbtn">About right</button><button class="pbtn">Too late</button></div></div>
-    <h3>Session log</h3>
-    <ul class="log" id="log"><li style="color:var(--ink-2)">Nothing recorded yet.</li></ul>
-    <div class="prow"><button class="pbtn" data-act="copyLog">Copy log</button><button class="pbtn" data-act="resetAll">Reset participant</button></div>
   </aside>
 </div>
-<button class="pbtn showpanel" data-act="showPanel">Show study controls</button>
+<div class="scrim" data-act="hidePanel"></div>
+<button class="pbtn showpanel" data-act="showPanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Study controls</button>
 
 <!-- ===== shared symbols ===== -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <linearGradient id="g-spark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dccbff"/><stop offset="1" stop-color="#9e6dff"/></linearGradient>
     <linearGradient id="g-fa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8457ff"/><stop offset="1" stop-color="#5a2ce6"/></linearGradient>
-    <linearGradient id="g-Instagram" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/>
-</linearGradient>
+    <linearGradient id="g-loop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF4E45"/><stop offset="1" stop-color="#F00000"/></linearGradient>
+    <linearGradient id="g-wisp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFC00"/><stop offset="1" stop-color="#F2D100"/></linearGradient>
+    <linearGradient id="g-room" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2618"/><stop offset=".55" stop-color="#1c120c"/><stop offset="1" stop-color="#0d0907"/></linearGradient>
+    <radialGradient id="g-noodle" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#f7d58b"/><stop offset="1" stop-color="#c9893d"/></radialGradient>
+    <linearGradient id="g-orbit" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f09433"/><stop offset="0.25" stop-color="#e6683c"/><stop offset="0.5" stop-color="#dc2743"/><stop offset="0.75" stop-color="#cc2366"/><stop offset="1" stop-color="#bc1888"/></linearGradient>
     <linearGradient id="g-hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb7ff"/><stop offset="1" stop-color="#8f63ff"/></linearGradient>
     <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#434072"/><stop offset=".38" stop-color="#b2698a"/><stop offset=".62" stop-color="#f0a072"/><stop offset=".78" stop-color="#f6c48c"/></linearGradient>
     <linearGradient id="g-meadow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d9a43"/><stop offset="1" stop-color="#3b5121"/></linearGradient>
@@ -641,7 +743,25 @@ body.nopanel .showpanel{display:block}
       <g fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="8.2" r="4.6"/><circle cx="15.8" cy="12" r="4.6"/><circle cx="12" cy="15.8" r="4.6"/><circle cx="8.2" cy="12" r="4.6"/></g>
     </symbol>
     <symbol id="i-fa" viewBox="0 0 38 38"><rect width="38" height="38" rx="10" fill="url(#g-fa)"/><use href="#i-faglyph" x="7" y="7" width="24" height="24"/></symbol>
-    <symbol id="i-Instagram" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="url(#g-Instagram)"/><rect x="9" y="9" width="26" height="26" rx="7" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="22" cy="22" r="6" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="29.5" cy="14.5" r="1.8" fill="#fff"/></symbol>
+    <symbol id="i-loop" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="url(#g-loop)"/><path d="M30.7 20.2l-10.4-6A3.6 3.6 0 0 0 15 17.3v9.4a3.6 3.6 0 0 0 5.3 3.1l10.4-6a3.6 3.6 0 0 0 0-6.2z" fill="#fff"/></symbol>
+    <symbol id="i-wisp" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="url(#g-wisp)"/><path d="M22 13c-4.4 0-8 3.6-8 8.5 0 1.5.5 2.8 1.2 4-.6 1.8-2.2 3.5-2.2 3.5s2.5.2 4.2-.8c1.4.8 3 1.3 4.8 1.3 1.8 0 3.4-.5 4.8-1.3 1.7 1 4.2.8 4.2.8s-1.6-1.7-2.2-3.5c.7-1.2 1.2-2.5 1.2-4 0-4.9-3.6-8.5-8-8.5z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-noodles" viewBox="0 0 393 880">
+      <rect width="393" height="880" fill="url(#g-room)"/>
+      <g fill="#f6b25c" opacity=".16"><circle cx="60" cy="150" r="40"/><circle cx="330" cy="210" r="56"/><circle cx="300" cy="90" r="22"/><circle cx="110" cy="290" r="18"/></g>
+      <path d="M0 560c90-30 300-30 393 0v320H0z" fill="#5a3a22"/>
+      <g stroke="#4a2f1b" stroke-width="3" opacity=".6"><path d="M0 610c120-18 270-18 393 0M0 680c120-16 270-16 393 0M0 760c120-14 270-14 393 0"/></g>
+      <ellipse cx="196" cy="560" rx="150" ry="34" fill="#000" opacity=".35"/>
+      <path d="M58 470h276c-6 70-58 110-138 110S64 540 58 470z" fill="#e9e4dc"/>
+      <path d="M58 470h276c-1 8-3 15-5 22H63c-2-7-4-14-5-22z" fill="#cfc8bd"/>
+      <ellipse cx="196" cy="470" rx="138" ry="30" fill="#2b1a10"/>
+      <ellipse cx="196" cy="466" rx="128" ry="25" fill="url(#g-noodle)"/>
+      <g fill="none" stroke="#b9792f" stroke-width="3" stroke-linecap="round" opacity=".8"><path d="M90 468c30-14 60 12 90-2s56 10 86-4 40 6 40 6"/><path d="M100 478c40-10 70 10 100-2s50 8 90-4"/><path d="M120 456c26-8 50 8 76-2s50 6 80-4"/></g>
+      <g fill="#4d7c0f"><circle cx="160" cy="458" r="5"/><circle cx="230" cy="470" r="4"/><circle cx="200" cy="452" r="4"/><circle cx="255" cy="458" r="5"/></g>
+      <g fill="#f5efe6"><circle cx="140" cy="470" r="3"/><circle cx="215" cy="462" r="3"/><circle cx="275" cy="472" r="3"/></g>
+      <g stroke="#8a5a2b" stroke-width="7" stroke-linecap="round"><path d="M250 300l70 210"/><path d="M276 296l60 214"/></g>
+      <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".18"><path d="M150 420c-14-30 14-46 0-76s12-44 0-70"/><path d="M200 410c-14-30 14-46 0-76s12-44 0-70"/><path d="M245 420c-14-30 14-46 0-76"/></g>
+    </symbol>
+    <symbol id="i-orbit" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="url(#g-orbit)"/><rect x="10" y="10" width="24" height="24" rx="6" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="22" cy="22" r="5.6" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="29.5" cy="14.5" r="1.8" fill="#fff"/></symbol>
     <symbol id="i-hourglass" viewBox="0 0 66 66">
       <g stroke="#9b74ff" stroke-width="2.4" stroke-linecap="round"><path d="M2 22l7 3M2 38l7-3M64 22l-7 3M64 38l-7-3"/></g>
       <rect x="18" y="8" width="30" height="5.5" rx="2.7" fill="url(#g-hg)"/>
@@ -680,7 +800,8 @@ body.nopanel .showpanel{display:block}
 <script>
 (function(){
 "use strict";
-const APP = "Instagram";
+const APPS = { orbit:"Instagram", loop:"Youtube shorts", wisp:"Snapchat" };
+let APP = "Instagram";
 const DEFAULT_RAW = "Check notifications, reply to friends, and quickly see what’s new.";
 const DEFAULT_INTENT = "check notifications, reply to friends and briefly check what’s new";
 const STEPS = [1,2,3,5,8,10,15,20,25,30,45,60];
@@ -715,18 +836,18 @@ const G = {
 };
 const LG = (a,b) => `linear-gradient(150deg,${a},${b})`;
 const ROWS = [
-  [["Gallery",LG("#ffb36b","#ff6f91"),"gallery"],["Camera",LG("#646875","#2e3038"),"camera"],["Instagram","","Instagram"],["Journal",LG("#f7f3ea","#d8d0bf"),"journal"]],
-  [["Clock","#121216","clock"],["Fitness",LG("#a3e635","#16a34a"),"fitness"],["Books",LG("#fdba74","#ea580c"),"books"],["Wallet",LG("#475569","#0f172a"),"wallet"]],
+  [["Gallery",LG("#ffb36b","#ff6f91"),"gallery"],["Camera",LG("#646875","#2e3038"),"camera"],["Instagram","","orbit"],["Journal",LG("#f7f3ea","#d8d0bf"),"journal"]],
+  [["Snapchat","","wisp"],["Fitness",LG("#a3e635","#16a34a"),"fitness"],["Books",LG("#fdba74","#ea580c"),"books"],["Wallet",LG("#475569","#0f172a"),"wallet"]],
   [["Podcasts",LG("#d8b4fe","#7e22ce"),"podcasts"],["Calculator",LG("#5b5b63","#27272a"),"calculator"],["Files",LG("#93c5fd","#2563eb"),"files"],["Tasks",LG("#fde047","#f59e0b"),"tasks"]],
   [["Translate",LG("#7dd3fc","#0369a1"),"translate"],["Stocks",LG("#1e293b","#020617"),"stocks"],["Reader",LG("#fca5a5","#b91c1c"),"reader"],["Home",LG("#fdba74","#f59e0b"),"homeapp"]],
-  [["Tunes",LG("#fcd34d","#f97316"),"tunes"],["Maps",LG("#5eead4","#0d9488"),"maps"],["Clips",LG("#a5b4fc","#4338ca"),"clips"],["Settings",LG("#a1a1aa","#52525b"),"settings"]]
+  [["Tunes",LG("#fcd34d","#f97316"),"tunes"],["Maps",LG("#5eead4","#0d9488"),"maps"],["Youtube shorts","","loop"],["Settings",LG("#a1a1aa","#52525b"),"settings"]]
 ];
 const DOCK = [["Phone",LG("#6ee7a0","#16a34a"),"phone"],["Mail",LG("#7cb4ff","#1d4ed8"),"mail"],["Messages",LG("#5eead4","#059669"),"messages"],["Browser",LG("#e0f2fe","#93c5fd"),"browser"]];
 const COLX = [20,109,204,297];
 function appHTML([name,bg,g],x,y,isDock){
-  const isT = g==="Instagram";
-  const inner = isT ? `<svg viewBox="0 0 44 44" style="width:61px;height:61px"><use href="#i-Instagram"/></svg>` : `<svg viewBox="0 0 24 24">${G[g]}</svg>`;
-  return `<button class="app${isT?' target':''}" ${isT?'data-act="openApp"':'tabindex="-1"'} style="left:${x}px;top:${y}px" aria-label="${name}"><span class="ic" style="${isT?'':'background:'+bg}">${inner}</span>${isDock?'':`<span class="nm">${name}</span>`}</button>`;
+  const isT = g in APPS;
+  const inner = isT ? `<svg viewBox="0 0 44 44" style="width:61px;height:61px"><use href="#i-${g}"/></svg>` : `<svg viewBox="0 0 24 24">${G[g]}</svg>`;
+  return `<button class="app${isT?' target':''}" ${isT?`data-act="openApp" data-app="${g}"`:'tabindex="-1"'} style="left:${x}px;top:${y}px" aria-label="${name}"><span class="ic" style="${isT?'':'background:'+bg}">${inner}</span>${isDock?'':`<span class="nm">${name}</span>`}</button>`;
 }
 $("#appGrid").innerHTML = ROWS.map((row,ri)=>row.map((a,ci)=>appHTML(a,COLX[ci],250+ri*95)).join("")).join("");
 $("#dock").innerHTML = DOCK.map((a,ci)=>appHTML(a,COLX[ci]-7,15,true)).join("");
@@ -735,13 +856,20 @@ function wave(el,n,max){ const h=[]; for(let i=0;i<n;i++){const c=1-Math.abs(i-(
   h.push(`<i style="height:${v}px;opacity:${(.45+.55*c).toFixed(2)};animation-delay:${(i*0.07).toFixed(2)}s"></i>`);} el.innerHTML=h.join(""); }
 wave($("#wave2"),17,34); wave($("#wave7"),22,22);
 
+const S0 = { app:"orbit" };
+function setApp(id){
+  S0.app=id; APP=APPS[id];
+  $$(".app-name").forEach(e=>e.textContent=APP);
+  $$("[data-appicon]").forEach(u=>u.setAttribute("href","#i-"+id));
+  $$("#appSeg button").forEach(b=>b.classList.toggle("on",b.dataset.pick===id));
+  if(typeof applyIntent==="function") applyIntent();
+}
 $$(".app-name").forEach(e=>e.textContent=APP);
 $$(".app-name-lc").forEach(e=>e.textContent=APP.toLowerCase());
 
 /* ---------- state ---------- */
 const S = { screen:"home", permission:null, raw:"", intent:DEFAULT_INTENT, minutes:10, editing:false, speed:1000,
   remaining:null, unlimited:false, reminder:true, reminderShown:false, paused:false, step6:"extend", from7:"", log:[] };
-try{ const saved=JSON.parse(localStorage.getItem("fa-log")||"[]"); if(Array.isArray(saved)) S.log=saved; }catch(e){}
 
 const STATUS = { home:["9:41",0], perm:["9:41",0], s1:["9:41",0], s2:["9:41",0], s3:["9:41",0], feed:["21:46",1], s5:["21:56",1], s6:["21:57",1], s7:["21:58",1] };
 const FLOW = [["0","Home screen","home"],["P","Usage permission (step 1)","perm"],["1","Intent check","s1"],["2","Say what it's for","s2"],["3","Session length","s3"],["4","1-minute reminder","s4"],["5","Time's up","s5"],["6","Paused","s6"],["7","Extended after reason","s7"]];
@@ -753,7 +881,7 @@ function setScreen(k){
   $("#dim").style.display = overHome ? "block":"none";
   ["perm","s1","s2","s3","s5","s6","s7"].forEach(id=>$("#"+id).classList.toggle("on",id===k));
   const feedOn = ["feed","s5","s6","s7"].includes(k);
-  $("#feed").classList.toggle("on",feedOn);
+  $$(".appview").forEach(v=>v.classList.toggle("on",feedOn && v.dataset.app===S0.app));
   $("#home").classList.toggle("on", k==="home"||overHome);
   if(k!=="feed") hideBanner(false);
   const [t,b]=STATUS[k]; $("#sbTime").textContent=t; $("#battFull").style.display=b?"none":""; $("#batt78").style.display=b?"inline-flex":"none";
@@ -764,12 +892,12 @@ function markFlow(k){ $$("#flowList button").forEach(btn=>btn.classList.toggle("
 
 /* ---------- helpers ---------- */
 function clockStr(){ return new Date().toTimeString().slice(0,8); }
-function log(msg){ S.log.push({t:clockStr(),msg}); try{localStorage.setItem("fa-log",JSON.stringify(S.log));}catch(e){} renderLog(); }
+function log(msg){ S.log.push({t:clockStr(),msg}); }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
-function renderLog(){ const el=$("#log"); if(!S.log.length){el.innerHTML='<li style="color:var(--ink-2)">Nothing recorded yet.</li>';return;}
+function renderLog(){ const el=$("#log"); if(!el) return; if(!S.log.length){el.innerHTML='<li style="color:var(--ink-2)">Nothing recorded yet.</li>';return;}
   el.innerHTML=S.log.map(x=>`<li><time>${x.t}</time>${esc(x.msg)}</li>`).join(""); el.scrollTop=el.scrollHeight; }
 let toastT; function toast(msg){ $("#toastTxt").textContent=msg; $("#toast").classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.remove("on"),2800); }
-function askRate(id){ $("#"+id).classList.add("ask"); }
+function askRate(id){ const el=$("#"+id); if(el) el.classList.add("ask"); }
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 function normIntent(raw){
   if(!raw || raw.trim()===DEFAULT_RAW) return DEFAULT_INTENT;
@@ -861,7 +989,7 @@ function runS7(){
   clearSeq();
   const goal = S.step6==="goal";
   const said = goal ? "I just want to keep scrolling for a bit." : "I’m still talking to a friend, give me five more minutes.";
-  ["chatU","uav","chatA","extCard","intent7","contBtn","remBtn"].forEach(id=>$("#"+id).classList.remove("show"));
+  ["chatU","uav","chatA","extCard","intent7","contBtn"].forEach(id=>$("#"+id).classList.remove("show"));
   $("#goalChips").style.display="none";
   $("#s7status").textContent="Listening...";
   const noPerm = S.permission==="notnow";
@@ -877,25 +1005,18 @@ function runS7(){
   else at(tEnd+500,()=>{ $("#chatA").classList.add("show"); $("#goalChips").style.display="flex"; });
 }
 function showExtension(){
-  ["extCard","intent7","contBtn","remBtn"].forEach((id,k)=>seqT.push(setTimeout(()=>$("#"+id).classList.add("show"),k*120)));
+  ["extCard","intent7","contBtn"].forEach((id,k)=>seqT.push(setTimeout(()=>$("#"+id).classList.add("show"),k*120)));
   log("Assistant extended the session by 5 minutes");
 }
 function extend(withReminder){
   S.remaining = Math.max(0,S.remaining||0)+5; S.unlimited=false; S.reminder=withReminder; S.reminderShown=false; S.paused=false;
-  log(withReminder?"Extension: set a reminder for 5 minutes":"Extension: continue on "+APP);
-  go("feed"); if(withReminder) toast("Reminder set — I’ll nudge you 1 minute before the end.");
+  log("Extension: continue on "+APP+" (+5 min, reminder on)");
+  go("feed"); toast("+5 min. I’ll remind you 1 minute before it ends.");
 }
 
 /* ---------- navigation ---------- */
 function go(k){
-  if(k==="s2"){ $("#typeIn").value=""; startListening(); } else { clearInterval(typeTimer); clearTimeout(typeStart); }
-  if(k==="s3"){ S.editing=false; renderS3(); }
-  if(k!=="s7") clearSeq();
-  setScreen(k);
-  if(k==="s7") runS7();
-}
-function jump(k){
-  $$(".rate").forEach(r=>r.classList.remove("ask"));
+  if(k==="s2"){ $("#typeIn").value=""; startListening(); } else { clearInterval(typeTimer); clearTimeout(typeStart); }   if(k==="s3"){ S.editing=false; renderS3(); }   if(k!=="s7") clearSeq();   setScreen(k);   if(k==="s7") runS7(); } function jump(k){   $$(".rate").forEach(r=>r.classList.remove("ask"));
   if(k==="s4"){ if(S.remaining==null||S.remaining>1) S.remaining=1; S.unlimited=false; S.reminder=true; S.reminderShown=true; go("feed"); showBanner(); return; }
   if(k==="s5") S.remaining=0;
   if(k==="s6") S.paused=true;
@@ -904,7 +1025,13 @@ function jump(k){
 }
 
 const ACT = {
-  openApp(){
+  openApp(el){
+    const id=(el&&el.dataset.app)||S0.app;
+    if(id!==S0.app){
+      if(S.paused||S.unlimited||S.remaining!=null){ log(APP+" session ended (switched app)"); }
+      S.remaining=null; S.paused=false; S.unlimited=false; setApp(id);
+    }
+    log("Tapped "+APP+" on home screen");
     if(S.paused){ log("Reopened "+APP+" — still paused"); go("s6"); return; }
     if(S.unlimited || (S.remaining!=null && S.remaining>0)){ go("feed"); return; }
     go(S.permission===null ? "perm" : "s1");
@@ -922,14 +1049,12 @@ const ACT = {
   bnMore(){ hideBanner(false); askRate("rate4"); log("Reminder: Need more time"); go("s7"); },
   s5Done(){ closeApp(APP+" closed. Nice work sticking to your plan.","Time’s up: I’m finished"); },
   s5More(){ log("Time’s up: I need more time"); go("s7"); },
-  s5Cont(){ continueUnlimited("time’s up prompt"); },
   s5X(){ log("Time’s up prompt ignored — "+APP+" paused"); S.paused=true; go("s6"); },
   s6Explain(){ log("Paused: explain why"); go("s7"); },
   s6Close(){ closeApp(APP+" closed. See you next time.","Paused: Close "+APP); },
-  s6Cont(){ continueUnlimited("pause screen"); },
   s6X(){ log("Pause screen dismissed — "+APP+" stays paused"); go("home"); toast(APP+" stays paused until you choose what to do."); },
   s7X(){ log("Conversation dismissed — "+APP+" paused"); S.paused=true; go("s6"); },
-  s7Cont(){ extend(false); }, s7Rem(){ extend(true); },
+  s7Cont(){ extend(true); },
   simInfo(){ toast("Based on local app-usage history from similar sessions."); },
   gStop(){ closeApp(APP+" closed. Sleep well.","Goal reminder: Stop now"); },
   gFive(){ $("#goalChips").style.display="none"; $("#asstSaid").textContent="Okay. 5 intentional minutes, then I’ll check in again."; showExtension(); },
@@ -937,16 +1062,11 @@ const ACT = {
   hidePanel(){ document.body.classList.add("nopanel"); fit(); }, showPanel(){ document.body.classList.remove("nopanel"); fit(); },
   copyLog(){ const txt=S.log.map(x=>x.t+"  "+x.msg).join("\n")||"(empty)";
     (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast("Log copied."),()=>{ const r=document.createRange(); r.selectNodeContents($("#log")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Log selected — press Ctrl/Cmd+C to copy."); }); },
-  resetAll(){ Object.assign(S,{permission:null,remaining:null,unlimited:false,paused:false,intent:DEFAULT_INTENT,minutes:10,log:[]}); try{localStorage.removeItem("fa-log");}catch(e){} applyIntent(); renderLog();
-    $$(".rate").forEach(r=>{r.classList.remove("ask"); r.querySelectorAll("button").forEach(b=>b.classList.remove("on"));}); go("home"); }
-};
-
-document.addEventListener("click",e=>{
-  const a=e.target.closest("[data-act]"); if(a && ACT[a.dataset.act]){ ACT[a.dataset.act](); return; }
-  const j=e.target.closest("[data-jump]"); if(j){ jump(j.dataset.jump); return; }
-  const md=e.target.closest("[data-mode]"); if(md){ S.step6=md.dataset.mode; $$("#s6Seg button").forEach(b=>b.classList.toggle("on",b===md)); return; }
+  resetAll(){ setApp("orbit"); Object.assign(S,{permission:null,remaining:null,unlimited:false,paused:false,intent:DEFAULT_INTENT,minutes:10,log:[]}); try{localStorage.removeItem("fa-log");}catch(e){} applyIntent(); renderLog();
+    $$(".rate").forEach(r=>{r.classList.remove("ask"); r.querySelectorAll("button").forEach(b=>b.classList.remove("on"));}); go("home"); } };  document.addEventListener("click",e=>{   const a=e.target.closest("[data-act]"); if(a && ACT[a.dataset.act]){ ACT[a.dataset.act](a); return; }   const pk=e.target.closest("[data-pick]"); if(pk){ if(pk.dataset.pick!==S0.app){ S.remaining=null; S.paused=false; S.unlimited=false; setApp(pk.dataset.pick); log("Study app set to "+APP); setScreen(S.screen); } return; }   const j=e.target.closest("[data-jump]"); if(j){ jump(j.dataset.jump); if(innerWidth<=820){ document.body.classList.add("nopanel"); } return; }   const md=e.target.closest("[data-mode]"); if(md){ S.step6=md.dataset.mode; $$
+("#s6Seg button").forEach(b=>b.classList.toggle("on",b===md)); return; }
   const rt=e.target.closest("[data-rate] button"); if(rt){ const grp=rt.parentElement; grp.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===rt)); grp.parentElement.classList.remove("ask"); log(`${grp.dataset.rate}: ${rt.textContent}`); return; }
-  if(S.screen==="feed" && $("#banner").classList.contains("on") && e.target.closest("#feed") && !e.target.closest("#banner")) hideBanner(true);
+  if(S.screen==="feed" && $("#banner").classList.contains("on") && e.target.closest(".appview") && !e.target.closest("#banner")) hideBanner(true);
 });
 $("#typeIn").addEventListener("input",()=>{ if($("#typeIn").value.trim()){ clearInterval(typeTimer); clearTimeout(typeStart); $("#sendBtn").classList.add("ready"); $("#listenLbl").textContent="Typing..."; $("#wave2").classList.remove("live"); $("#pulseA").style.display=$("#pulseB").style.display="none"; } });
 $("#typeIn").addEventListener("keydown",e=>{ if(e.key==="Enter") submitIntent(); });
@@ -957,8 +1077,8 @@ function fit(){
   const slot=$("#slot"), sc=$("#scaler"); const W=419,H=906;
   const narrow = innerWidth<=820;
   const panelW = (document.body.classList.contains("nopanel")||narrow)?0:368;
-  const availW = innerWidth-32-panelW;
-  const availH = narrow ? innerHeight*0.94 : innerHeight-32;
+  const availW = innerWidth-(narrow?20:32)-panelW;
+  const availH = innerHeight-(narrow?70:32);
   const s = Math.max(.3, Math.min(1.15, availW/W, availH/H));
   sc.style.transform=`scale(${s})`; slot.style.width=W*s+"px"; slot.style.height=H*s+"px";
 }
