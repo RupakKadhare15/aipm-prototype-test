@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Focus Assistant prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --page:#e7e6ec; --panel:#ffffff; --panel-2:#f3f2f7; --ink:#1d1b26; --ink-2:#5f5b70; --line:#dcd9e5; --acc:#6b3cf5; --acc-soft:#ece6ff;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter",system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--page:#1c1f26; --panel:#24232d; --panel-2:#2c2a37; --ink:#ecebf3; --ink-2:#a19cb3; --line:#3a3747; --acc:#9d7bff; --acc-soft:#342b52;}
+}
+:root[data-theme="dark"]{--page:#1c1f26; --panel:#24232d; --panel-2:#2c2a37; --ink:#ecebf3; --ink-2:#a19cb3; --line:#3a3747; --acc:#9d7bff; --acc-soft:#342b52;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--page);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid #b18cff;outline-offset:2px}
+
+/* ---------- page layout ---------- */
+.stage{display:flex;gap:28px;align-items:flex-start;justify-content:center;padding:16px;min-height:100%}
+.phone-slot{flex:none;position:relative}
+.phone-scale{transform-origin:top left;position:absolute;top:0;left:0}
+
+/* ---------- phone hardware ---------- */
+.phone{width:419px;height:906px;border-radius:66px;padding:13px;position:relative;
+  background:linear-gradient(145deg,#4a4b51 0%,#1a1b1f 18%,#26272c 55%,#111215 80%,#3b3c42 100%);
+  box-shadow:inset 0 0 0 1.5px #5a5b62,inset 0 0 0 4px #0b0b0d,0 30px 70px rgba(0,0,0,.45)}
+.hw{position:absolute;width:4px;background:linear-gradient(90deg,#55565c,#2a2b30);border-radius:2px}
+.hw.l{left:-3px}.hw.r{right:-3px}
+.screen{width:393px;height:880px;border-radius:53px;overflow:hidden;position:relative;background:#000;color:#fff;
+  font-family:var(--font);letter-spacing:-.01em;user-select:none;-webkit-user-select:none}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:60}
+.island::after{content:"";position:absolute;right:13px;top:12px;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#2b3170,#0b0d22 70%)}
+.statusbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:59;pointer-events:none}
+.sb-time{position:absolute;left:0;width:118px;text-align:center;top:16px;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.sb-right{position:absolute;right:30px;top:20px;display:flex;gap:6px;align-items:center}
+.batt78{display:inline-flex;align-items:center;gap:1px}
+.batt78 b{background:#fff;color:#000;font-size:12.5px;font-weight:700;border-radius:5px;padding:0 4px;height:15px;line-height:15px;min-width:27px;text-align:center}
+.batt78 i{width:2px;height:5px;background:rgba(255,255,255,.55);border-radius:0 1px 1px 0}
+.homebar{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:138px;height:5px;border-radius:3px;background:#fff;z-index:58;opacity:0;transition:opacity .2s}
+.homebar.on{opacity:1}
+
+/* ---------- layers ---------- */
+.layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility 0s linear .28s}
+.layer.on{opacity:1;visibility:visible;transition:opacity .28s ease,visibility 0s}
+.ab{position:absolute}
+.cx{left:0;right:0;text-align:center}
+
+/* ---------- home ---------- */
+#home{background:linear-gradient(180deg,#30343f 0%,#252832 45%,#1d2028 100%)}
+.widget{position:absolute;top:75px;height:141px;border-radius:22px;padding:15px 16px}
+.w-weather{left:27px;width:159px;background:linear-gradient(165deg,#466489 0%,#2c4262 55%,#22344f 100%)}
+.w-cal{left:210px;width:160px;background:#16161b}
+.w-weather .city{font-size:14px;font-weight:600;opacity:.92}
+.w-weather .deg{font-size:37px;font-weight:400;line-height:1.05;margin-top:2px;letter-spacing:-.02em}
+.w-weather .cond{font-size:12.5px;font-weight:600;margin-top:4px;opacity:.85}
+.w-weather .hl{font-size:12.5px;font-weight:600;opacity:.85}
+.w-cal .day{color:#ff4b3e;font-size:13px;font-weight:600}
+.w-cal .num{font-size:30px;font-weight:400;margin-top:-1px}
+.w-cal .ev{font-size:13px;color:#8e8d96;margin-top:16px}
+.wlabel{position:absolute;top:220px;font-size:12.5px;color:rgba(255,255,255,.9);width:160px;text-align:center}
+.app{position:absolute;width:76px;text-align:center;background:none;border:0;padding:0;color:#fff}
+.app .ic{width:61px;height:61px;border-radius:15px;margin:0 auto;display:grid;place-items:center;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.app .ic::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18)}
+.app .ic svg{width:34px;height:34px}
+.app .nm{display:block;font-size:12px;margin-top:5px;color:rgba(255,255,255,.92);white-space:nowrap}
+.app.target .ic{transition:transform .15s}
+.app.target:active .ic{transform:scale(.92)}
+.searchpill{position:absolute;top:728px;left:50%;transform:translateX(-50%);height:32px;padding:0 15px 0 12px;border-radius:16px;
+  background:rgba(255,255,255,.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;font-size:15px;color:rgba(255,255,255,.88)}
+.dock{position:absolute;top:773px;left:7px;right:7px;height:92px;border-radius:36px;background:rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.dim{position:absolute;inset:0;background:rgba(8,8,14,.5);backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px)}
+
+.spark{display:block;margin:0 auto}
+
+/* ---------- slide 1 card ---------- */
+.s1card,.permcard{position:absolute;left:14px;width:366px;border-radius:30px;padding:23px 22px 22px;text-align:center;overflow:hidden;
+  background:linear-gradient(170deg,rgba(52,44,78,.94) 0%,rgba(33,29,49,.95) 55%,rgba(28,25,40,.96) 100%);
+  box-shadow:inset 0 0 0 1px rgba(176,150,255,.22),0 20px 50px rgba(0,0,0,.45);
+  transform:translateY(12px) scale(.97);transition:transform .32s cubic-bezier(.2,.9,.3,1.2)}
+.s1card::before,.permcard::before{content:"";position:absolute;right:-60px;top:-40px;width:240px;height:200px;background:radial-gradient(closest-side,rgba(140,95,255,.28),transparent);pointer-events:none}
+.layer.on .s1card,.layer.on .permcard{transform:none}
+.s1card{top:332px}
+.s1card h2{font-size:20.8px;line-height:27.5px;font-weight:600;margin:10px 0 0;letter-spacing:-.015em}
+.lav{color:#b590ff}
+.s1btns{display:flex;gap:13px;margin-top:19px}
+.s1btns button{flex:1;height:48px;border-radius:16px;font-size:17.5px;font-weight:500}
+.btn-lav{border:0;color:#17112b;background:linear-gradient(90deg,#c7a8ff,#a97dff);box-shadow:0 0 22px rgba(167,120,255,.35)}
+.btn-ghost{background:rgba(30,24,50,.4);border:1.5px solid #9f82f0;color:#fff}
+.s1foot{font-size:13.6px;line-height:20px;color:#9a95ad;margin:18px 6px 4px}
+
+.permcard{top:236px}
+.permcard h2{font-size:21px;line-height:26px;font-weight:600;margin:12px 0 0}
+.permcard p{font-size:14px;line-height:20px;color:#a5a0b8;margin:12px 4px 0}
+.permchips{display:flex;flex-direction:column;gap:8px;margin:18px 0 0;text-align:left}
+.permchips div{display:flex;gap:10px;align-items:center;font-size:13.5px;color:#d9d3ec;background:rgba(255,255,255,.04);border-radius:12px;padding:9px 12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.permchips svg{flex:none}
+
+/* ---------- full-screen assistant (slides 2,3) ---------- */
+.fs{background:radial-gradient(ellipse 80% 55% at 50% 52%,#211c34 0%,#16141f 60%,#121119 100%)}
+.fs h1{font-weight:700;letter-spacing:-.02em;margin:0}
+.s2 h1{top:153px;font-size:26.5px;line-height:33.5px}
+.s2 .sub{top:236px;font-size:15.2px;line-height:22px;color:#8f8aa3;padding:0 20px}
+.orbwrap{position:absolute;left:50%;top:448px;width:0;height:0}
+.ring{position:absolute;border-radius:50%;transform:translate(-50%,-50%)}
+.ring.r3{width:256px;height:256px;box-shadow:inset 0 0 0 1px rgba(150,120,240,.12)}
+.ring.r2{width:196px;height:196px;background:radial-gradient(circle,rgba(110,80,200,.16),rgba(60,40,120,.06) 70%);box-shadow:inset 0 0 0 1px rgba(160,130,255,.22)}
+.ring.pulse{width:150px;height:150px;box-shadow:0 0 0 1px rgba(180,150,255,.35);animation:pulse 2.4s ease-out infinite}
+.ring.pulse.b{animation-delay:1.2s}
+@keyframes pulse{0%{width:150px;height:150px;opacity:.9}100%{width:262px;height:262px;opacity:0}}
+.orb{position:absolute;width:146px;height:146px;border-radius:50%;transform:translate(-50%,-50%);border:0;display:grid;place-items:center;
+  background:radial-gradient(circle at 42% 30%,#dcc8ff 0%,#b693ff 38%,#8b5cf0 78%,#7446db 100%);
+  box-shadow:0 0 40px rgba(150,100,255,.55),0 0 90px rgba(130,80,240,.3),inset 0 -8px 24px rgba(70,30,160,.35)}
+.orb svg{width:58px;height:58px}
+.listening{top:543px;font-size:15px;color:#a983ff}
+.transcript{position:absolute;left:14px;right:14px;top:584px;height:147px;border-radius:24px;padding:22px 26px 0;text-align:center;
+  background:linear-gradient(180deg,rgba(52,42,86,.42),rgba(36,30,60,.42));box-shadow:inset 0 0 0 1px rgba(160,130,255,.24)}
+.transcript p{margin:0 auto;max-width:300px;font-size:17px;line-height:26px;min-height:52px}
+.caret{display:inline-block;width:2px;height:18px;background:#b590ff;vertical-align:-3px;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.wave{display:flex;align-items:center;justify-content:center;gap:7px;height:36px;margin-top:14px}
+.wave i{display:block;width:3.6px;border-radius:2px;background:#b590ff}
+.wave.live i{animation:wv 1s ease-in-out infinite}
+@keyframes wv{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1.08)}}
+.typebar{position:absolute;left:16px;right:16px;top:768px;height:69px;border-radius:30px;display:flex;align-items:center;gap:12px;padding:0 13px 0 22px;
+  background:rgba(32,30,44,.85);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.typebar input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:16.5px;font-family:inherit;min-width:0}
+.typebar input::placeholder{color:#8d899c}
+.sendbtn{width:39px;height:39px;border-radius:50%;border:0;background:#2e2c3b;display:grid;place-items:center;transition:background .2s}
+.sendbtn.ready{background:linear-gradient(135deg,#b896ff,#8a5cf6)}
+.sendbtn svg{width:18px;height:18px}
+
+/* slide 3 */
+.s3 h1{top:146px;font-size:27.2px;line-height:33px}
+.s3 .sub{top:258px;font-size:15px;line-height:22px;color:#8f8aa3;padding:0 20px}
+.usage{position:absolute;left:22px;right:19px;top:347px;height:122px;border-radius:24px;display:flex;align-items:center;gap:18px;padding:0 20px;
+  background:rgba(34,30,50,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.usage .tile{width:60px;height:61px;border-radius:15px;flex:none;display:grid;place-items:center;background:#262238;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.usage p{margin:0;font-size:16px;line-height:23px;color:#e9e6f2}
+.usage b{display:block;font-size:20.5px;color:#b590ff;font-weight:700;margin-top:1px}
+.q{top:494px;font-size:20px;line-height:28px;font-weight:500}
+.recrow{position:absolute;left:0;right:0;top:569px;display:flex;justify-content:center;align-items:center;gap:14px}
+.recbox{width:225px;height:100px;border-radius:22px;text-align:center;padding-top:20px;
+  background:linear-gradient(180deg,rgba(54,40,96,.55),rgba(34,26,62,.6));
+  box-shadow:inset 0 0 0 1px rgba(181,144,255,.75),0 0 26px rgba(140,90,255,.42),inset 0 0 22px rgba(140,90,255,.22)}
+.recbox small{display:block;font-size:11.5px;letter-spacing:.17em;color:#b590ff;font-weight:600}
+.recbox strong{display:block;font-size:42px;font-weight:700;letter-spacing:-.02em;line-height:48px;margin-top:2px}
+.step{width:40px;height:40px;border-radius:50%;border:0;background:rgba(181,144,255,.14);color:#cdb6ff;font-size:22px;line-height:1;display:none;box-shadow:inset 0 0 0 1px rgba(181,144,255,.4)}
+.editing .step{display:block}
+.editing .recbox{width:180px}
+.foot3{top:681px;font-size:13.5px;color:#8f8aa3;display:flex;justify-content:center;gap:7px;align-items:center}
+.bigbtn{position:absolute;left:19px;right:19px;height:51px;border-radius:26px;font-size:18px;font-weight:600;border:0}
+.b-set{top:729px;color:#1a1330;background:linear-gradient(90deg,#c4a3ff,#a678ff);box-shadow:0 0 28px rgba(160,110,255,.45)}
+.b-change{top:796px;height:50px;background:transparent;color:#b99aff;box-shadow:inset 0 0 0 1px rgba(177,140,255,.45);font-weight:600}
+
+/* ---------- feed (original social app) ---------- */
+#feed{background:#0c0c10}
+.fhead{position:absolute;top:56px;left:16px;right:16px;height:40px;display:flex;align-items:center;justify-content:space-between}
+.wordmark{font-size:25px;font-weight:800;letter-spacing:-.04em;display:flex;align-items:center;gap:7px}
+.wordmark svg{width:24px;height:24px}
+.fcompose{position:absolute;top:106px;left:14px;right:14px;height:42px;border-radius:21px;background:#17171d;box-shadow:inset 0 0 0 1px #24242c;display:flex;align-items:center;gap:10px;padding:0 14px 0 6px;font-size:14px;color:#8b8b97}
+.fcompose .me2{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#fca5a5,#7c3aed);flex:none}
+.fcompose svg{margin-left:auto;flex:none}
+.ftabs{position:absolute;top:160px;left:14px;right:14px;height:38px;display:flex;gap:22px;border-bottom:1px solid #1f1f27;font-size:15px;font-weight:600;color:#7d7d89}
+.ftabs span{position:relative;padding-top:8px}
+.ftabs span.on{color:#fff}
+.ftabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2.5px;border-radius:2px;background:#2dd4bf}
+.stories{position:absolute;top:214px;left:12px;right:0;display:flex;gap:14px;overflow:hidden}
+.story{flex:none;width:72px;text-align:center}
+.story .av{width:70px;height:70px;border-radius:50%;padding:3px;background:#2dd4bf;position:relative}
+.story .av span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:3px solid #0c0c10;font-size:28px}
+.story.me .av{background:#34343c}
+.story .plus{position:absolute;right:-1px;bottom:-1px;width:23px;height:23px;border-radius:50%;background:#2dd4bf;border:3px solid #0c0c10;display:grid;place-items:center;color:#062a26;font-weight:800;font-size:15px;line-height:1}
+.story small{display:block;font-size:12.5px;margin-top:6px;color:#e8e8ee}
+.post-h{position:absolute;top:318px;left:14px;right:14px;display:flex;align-items:center;gap:10px}
+.post-h .pav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5eead4,#0e7490);display:grid;place-items:center;font-size:16px}
+.post-h b{font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:4px}
+.post-h small{display:block;font-size:12.5px;color:#a8a8b3}
+.post-img{position:absolute;top:360px;left:0;right:0;height:318px;overflow:hidden}
+.post-img svg{width:100%;height:100%;display:block}
+.count{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.55);border-radius:12px;font-size:12px;padding:4px 9px}
+.dots{position:absolute;top:688px;left:0;right:0;display:flex;justify-content:center;gap:4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:#4a4a55}.dots i:first-child{background:#2dd4bf}
+.actions{position:absolute;top:704px;left:14px;right:14px;display:flex;align-items:center;gap:16px;font-size:14.5px;font-weight:600}
+.actions span{display:flex;align-items:center;gap:6px}
+.actions .sv{margin-left:auto}
+.caption{position:absolute;top:740px;left:14px;right:14px;font-size:14px;line-height:19px}
+.caption em{font-style:normal;color:#a8a8b3}
+.fnav{position:absolute;bottom:0;left:0;right:0;height:84px;background:#0c0c10;border-top:1px solid #1d1d24;display:flex;justify-content:space-around;padding-top:12px}
+.fnav span{width:28px;height:28px;display:grid;place-items:center}
+.fnav .me{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#fca5a5,#7c3aed)}
+
+/* notification banner (slide 4) */
+.banner{position:absolute;top:55px;left:6px;right:6px;border-radius:26px;padding:12px 10px 11px 10px;z-index:40;
+  background:linear-gradient(160deg,rgba(54,46,76,.94),rgba(30,28,42,.95) 55%,rgba(26,25,36,.96));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 40px rgba(0,0,0,.5);
+  transform:translateY(-220px);transition:transform .45s cubic-bezier(.2,.9,.25,1.1)}
+.banner.on{transform:none}
+.bn-top{display:flex;gap:10px;align-items:flex-start}
+.bn-top .faic{width:38px;height:38px;border-radius:10px;flex:none}
+.bn-top .t1{font-size:14px;font-weight:600;display:flex;justify-content:space-between;width:100%;margin-top:2px}
+.bn-top .t1 small{font-size:12.5px;color:#9893aa;font-weight:400;margin-right:6px}
+.bn-top h3{margin:8px 0 0;font-size:15px;font-weight:700;letter-spacing:-.015em}
+.bn-top p{margin:5px 0 0;font-size:12.8px;line-height:15.6px;color:#aeaabd}
+.bn-btns{display:flex;gap:9px;margin-top:17px}
+.bn-btns button{flex:1;height:43px;border-radius:14px;border:0;font-size:15px;font-weight:500;color:#fff}
+.bn-done{background:#2c2b37}
+.bn-more{background:linear-gradient(90deg,#6a3cf6,#5b2ee6)}
+
+/* ---------- FA full screens (5,6,7) ---------- */
+.fa{background:rgba(13,12,20,.72);backdrop-filter:blur(22px) saturate(.9);-webkit-backdrop-filter:blur(22px) saturate(.9);z-index:45}
+.fa::before{content:"";position:absolute;inset:0;pointer-events:none}
+.s6::before{background:radial-gradient(ellipse 60% 40% at 100% 22%,rgba(150,40,90,.22),transparent 70%),radial-gradient(ellipse 50% 40% at 0% 60%,rgba(110,40,140,.18),transparent 70%)}
+.s7{background:rgba(14,12,22,.93)}
+.s7::before{background:radial-gradient(ellipse 55% 45% at 105% 40%,rgba(170,50,100,.28),transparent 70%),radial-gradient(ellipse 60% 35% at 90% 95%,rgba(130,40,120,.3),transparent 70%)}
+.fahead{position:absolute;left:19px;right:19px;display:flex;align-items:center;gap:12px}
+.fahead .faic{width:34px;height:34px;border-radius:9px;flex:none}
+.fahead b{font-size:14.8px;font-weight:600}
+.fahead small{display:block;font-size:12.5px;color:#9893aa;font-weight:400;margin-top:2px}
+.xbtn{margin-left:auto;width:33px;height:33px;border-radius:50%;border:0;background:rgba(255,255,255,.12);display:grid;place-items:center;flex:none}
+.xbtn svg{width:15px;height:15px}
+.hg{position:absolute;left:50%;top:152px;width:122px;height:122px;margin-left:-61px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 45%,#2c2347 0%,#1c1830 70%);box-shadow:0 0 50px rgba(140,90,255,.38),inset 0 0 0 1px rgba(170,140,255,.18)}
+.fa h1{margin:0;font-size:26px;line-height:32px;font-weight:700;letter-spacing:-.02em}
+.intent{position:absolute;left:30px;right:29px;border-radius:20px;background:rgba(36,34,48,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);display:flex;gap:17px;padding:0 16px 0 19px;align-items:center}
+.intent .lbl{font-size:11.8px;color:#9893aa}
+.intent .lbl.caps{font-size:11px;letter-spacing:.09em;color:#9a96aa}
+.intent p{margin:3px 0 0;font-size:13.2px;line-height:18px;color:#ecebf2}
+.oico{width:44px;height:44px;border-radius:12px;flex:none}
+.opt{position:absolute;left:23px;right:22px;height:68px;border-radius:19px;border:0;display:flex;align-items:center;gap:16px;padding:0 18px 0 15px;text-align:left;color:#fff;
+  background:rgba(38,37,50,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.opt .tl{width:43px;height:43px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none}
+.opt b{display:block;font-size:15.4px;font-weight:500;letter-spacing:-.01em}
+.opt small{display:block;font-size:12.5px;color:#a5a1b5;margin-top:3px}
+.opt .chev{margin-left:auto;flex:none}
+.opt.hi{background:linear-gradient(90deg,#6a3cf2,#5b30e2);box-shadow:0 0 22px rgba(100,60,240,.25)}
+.opt.hi small{color:#e3dcff}
+.opt.hi .tl{background:rgba(255,255,255,.14)}
+.ffoot{position:absolute;left:27px;right:24px;display:flex;gap:15px;align-items:center;font-size:11.6px;line-height:14.5px;color:#9a96aa}
+.ffoot b{color:#c9c6d4;font-weight:500}
+
+/* slide 6 */
+.pz{position:absolute;left:50%;top:165px;width:0;height:0}
+.pz .ring{box-shadow:inset 0 0 0 1px rgba(150,130,220,.14)}
+.pz .ring.a{width:160px;height:160px;background:radial-gradient(circle,rgba(80,60,140,.12),transparent 70%)}
+.pz .ring.b2{width:118px;height:118px;box-shadow:inset 0 0 0 1px rgba(150,130,220,.2)}
+.pz .big{position:absolute;width:64px;height:64px;border-radius:17px;transform:translate(-50%,-50%)}
+.pz .pb{position:absolute;left:12px;top:10px;width:33px;height:33px;border-radius:50%;background:#2b2840;border:2px solid #9f7cff;display:grid;place-items:center}
+.asst{position:absolute;left:17px;right:20px;top:406px;display:flex;gap:10px;align-items:flex-start}
+.avfa{width:36px;height:36px;border-radius:50%;flex:none;margin-top:3px;background:linear-gradient(135deg,#7b4dff,#5a2ee0);display:grid;place-items:center}
+.bubble{background:rgba(44,42,58,.8);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);border-radius:16px;padding:10px 26px 11px 16px}
+.bubble p{margin:0;font-size:14.4px;line-height:20px}
+.bubble small{display:block;font-size:12.2px;color:#a5a1b5;margin-top:3px}
+.mic2{position:absolute;left:50%;top:481px;width:82px;height:82px;margin-left:-41px;border-radius:50%;border:2px solid #9a78ff;display:grid;place-items:center;
+  background:radial-gradient(circle,#2e2350,#20193a);box-shadow:0 0 34px rgba(130,80,255,.45)}
+.mic2 svg{width:36px;height:36px}
+.s6 .opt{height:62px;border-radius:17px}
+.s6 .opt b{font-size:14px}
+.s6 .asst .bubble{width:269px}
+.s6 .opt small{font-size:12px}
+
+/* slide 7 */
+.chat-u{position:absolute;right:54px;top:127px;width:212px;border-radius:24px;padding:17px 18px 10px;text-align:left;
+  background:linear-gradient(180deg,rgba(60,48,102,.75),rgba(46,38,82,.75));box-shadow:inset 0 0 0 1px rgba(160,130,255,.28);
+  opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s}
+.chat-u p{margin:0;font-size:14.6px;line-height:19px;min-height:38px}
+.chat-u .wave{justify-content:flex-start;margin-top:8px;height:26px;gap:3px}
+.chat-u .wave i{width:2.6px}
+.uav{position:absolute;right:9px;top:137px;width:37px;height:37px;border-radius:50%;background:#2c2b38;display:grid;place-items:center;opacity:0;transition:opacity .3s}
+.chat-a{position:absolute;left:14px;top:235px;display:flex;gap:9px;opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;z-index:2}
+.chat-a .avfa{width:40px;height:40px;margin-top:3px}
+.chat-a .bubble{width:240px;border-radius:18px;padding:12px 16px 13px;background:rgba(40,38,54,.96)}
+.chat-a .bubble p{font-size:15.3px;line-height:21px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips button{border:0;border-radius:14px;padding:7px 11px;font-size:13.5px;font-weight:500;color:#fff;background:rgba(255,255,255,.1)}
+.chips button.p{background:linear-gradient(90deg,#6a3cf2,#5b30e2)}
+.ext{position:absolute;left:25px;right:25px;top:338px;height:201px;border-radius:24px;text-align:center;
+  background:linear-gradient(180deg,rgba(48,34,90,.6),rgba(30,24,58,.6));box-shadow:inset 0 0 0 1.2px rgba(160,120,255,.65),0 0 30px rgba(120,70,255,.25)}
+.ext .ck{position:relative;width:82px;height:82px;margin:21px auto 0}
+.ext strong{display:block;font-size:34px;line-height:40px;font-weight:700;letter-spacing:-.02em;margin-top:10px;
+  background:linear-gradient(90deg,#c9b0ff,#a57bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ext p{margin:6px 30px 0;font-size:13.6px;line-height:18.5px;color:#d8d4e4}
+.intent7{position:absolute;left:24px;right:24px;top:552px;height:148px;border-radius:20px;background:rgba(36,34,48,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);padding:16px 14px 0 15px}
+.intent7 .top{display:flex;gap:17px;padding-left:2px}
+.intent7 .oico{width:48px;height:48px;border-radius:13px}
+.intent7 .lbl{font-size:11px;letter-spacing:.09em;color:#9a96aa;margin-top:2px}
+.intent7 p{margin:4px 0 0;font-size:14.6px;line-height:19px}
+.simrow{position:absolute;left:9px;right:9px;bottom:9px;height:58px;border-radius:15px;background:rgba(255,255,255,.06);display:flex;align-items:center;gap:14px;padding:0 14px 0 13px;border:0;color:#c9c5d5;text-align:left;font-size:13.6px;line-height:18px}
+.simrow .cc{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);display:grid;place-items:center;flex:none}
+.b-cont{position:absolute;left:24px;right:24px;top:716px;height:48px;border-radius:15px;border:0;color:#fff;font-size:15.5px;font-weight:500;
+  background:linear-gradient(90deg,#6a3cf6,#5b2ee6);display:flex;align-items:center;justify-content:center}
+.b-cont svg{position:absolute;right:18px}
+.b-rem{position:absolute;left:24px;right:24px;top:775px;height:51px;border-radius:15px;border:0;color:#e8e6ef;font-size:14.6px;
+  background:rgba(32,31,42,.8);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;gap:16px}
+.fadein{opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+.fadein.show,.chat-u.show,.chat-a.show,.uav.show{opacity:1;transform:none}
+
+/* toast */
+.toast{position:absolute;top:58px;left:50%;transform:translate(-50%,-110px);z-index:70;display:flex;gap:10px;align-items:center;width:max-content;max-width:350px;
+  padding:9px 16px 9px 9px;border-radius:22px;background:rgba(36,33,50,.97);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.4);
+  font-size:13.5px;line-height:17px;transition:transform .4s cubic-bezier(.2,.9,.25,1.1)}
+.toast.on{transform:translate(-50%,0)}
+.toast .faic{width:26px;height:26px;border-radius:7px;flex:none}
+
+/* ---------- facilitator panel ---------- */
+.panel{width:340px;flex:none;background:var(--panel);border-radius:20px;padding:18px;box-shadow:0 0 0 1px var(--line);font-size:14px;line-height:1.4}
+.panel h2{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.panel .hint{color:var(--ink-2);font-size:12.5px;margin:4px 0 0}
+.panel h3{font-size:12.5px;color:var(--ink-2);font-weight:600;margin:18px 0 8px}
+.ptop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.pbtn{border:0;background:var(--panel-2);color:var(--ink);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:500;box-shadow:inset 0 0 0 1px var(--line)}
+.pbtn.on{background:var(--acc);color:#fff;box-shadow:none}
+.flow{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.flow button{width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:6px 9px;border-radius:9px;display:flex;gap:10px;font-size:13.5px}
+.flow button span{width:22px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.flow button.cur{background:var(--acc-soft);color:var(--acc);font-weight:600}
+.flow button.cur span{color:var(--acc)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.timer{display:flex;justify-content:space-between;align-items:center;background:var(--panel-2);border-radius:12px;padding:10px 12px;margin-top:10px}
+.timer b{font-size:20px;font-variant-numeric:tabular-nums}
+.rate{background:var(--panel-2);border-radius:12px;padding:10px 12px;margin-top:6px;transition:box-shadow .3s}
+.rate.ask{box-shadow:0 0 0 2px var(--acc)}
+.rate > div:first-child{font-size:12.5px;color:var(--ink-2);margin-bottom:6px}
+.log{max-height:170px;overflow:auto;background:var(--panel-2);border-radius:12px;padding:8px 10px;font-size:12.5px;margin:0;list-style:none}
+.log li{padding:3px 0;border-bottom:1px solid var(--line)}
+.log li:last-child{border:0}
+.log time{color:var(--ink-2);margin-right:6px;font-variant-numeric:tabular-nums}
+.prow{display:flex;gap:6px;margin-top:8px}
+.showpanel{position:fixed;right:14px;bottom:14px;z-index:5;display:none}
+body.nopanel .panel{display:none}
+body.nopanel .showpanel{display:block}
+
+@media (max-width:820px){
+  .stage{flex-direction:column;align-items:center;padding:10px}
+  .panel{width:100%;max-width:440px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone-slot" id="slot">
+    <div class="phone-scale" id="scaler">
+      <div class="phone">
+        <div class="hw l" style="top:150px;height:32px"></div>
+        <div class="hw l" style="top:212px;height:62px"></div>
+        <div class="hw l" style="top:288px;height:62px"></div>
+        <div class="hw r" style="top:236px;height:98px"></div>
+
+        <div class="screen" id="screen">
+          <div class="island"></div>
+          <div class="statusbar">
+            <div class="sb-time" id="sbTime">9:41</div>
+            <div class="sb-right">
+              <svg width="19" height="12" viewBox="0 0 19 12"><rect x="0" y="8" width="3.2" height="4" rx="1" fill="#fff"/><rect x="5" y="5.5" width="3.2" height="6.5" rx="1" fill="#fff"/><rect x="10" y="3" width="3.2" height="9" rx="1" fill="#fff"/><rect x="15" y="0" width="3.2" height="12" rx="1" fill="#fff"/></svg>
+              <svg width="17" height="12" viewBox="0 0 17 12"><path d="M8.5 2.3c2.4 0 4.6.9 6.2 2.5l1.2-1.2C14 1.7 11.4.6 8.5.6S3 1.7 1.1 3.6l1.2 1.2C3.9 3.2 6.1 2.3 8.5 2.3z" fill="#fff"/><path d="M8.5 5.6c1.5 0 2.9.6 3.9 1.6l1.2-1.2C12.3 4.6 10.5 3.9 8.5 3.9S4.7 4.6 3.4 6l1.2 1.2c1-1 2.4-1.6 3.9-1.6z" fill="#fff"/><path d="M8.5 8.8c.7 0 1.3.3 1.7.7L8.5 11.3 6.8 9.5c.4-.4 1-.7 1.7-.7z" fill="#fff"/></svg>
+              <span id="battFull"><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="rgba(255,255,255,.4)"/><rect x="2" y="2" width="20" height="9" rx="2" fill="#fff"/><path d="M25 4.3v4.4c.8-.3 1.3-1.2 1.3-2.2S25.8 4.6 25 4.3z" fill="rgba(255,255,255,.45)"/></svg></span>
+              <span id="batt78" class="batt78" style="display:none"><b>78</b><i></i></span>
+            </div>
+          </div>
+
+          <!-- ===== 0 HOME ===== -->
+          <div class="layer on" id="home">
+            <div class="widget w-weather">
+              <div class="city">San Francisco</div>
+              <div class="deg">16°</div>
+              <svg width="22" height="15" viewBox="0 0 22 15" style="margin-top:6px"><path d="M6 14.5h11a4.5 4.5 0 0 0 .6-9 6 6 0 0 0-11.3 1.4A3.8 3.8 0 0 0 6 14.5z" fill="#fff" opacity=".92"/></svg>
+              <div class="cond">Mostly Cloudy</div>
+              <div class="hl">H:18° L:12°</div>
+            </div>
+            <div class="widget w-cal">
+              <div class="day">Tue</div>
+              <div class="num">27</div>
+              <div class="ev">No events today</div>
+            </div>
+            <div class="wlabel" style="left:27px">Weather</div>
+            <div class="wlabel" style="left:210px">Calendar</div>
+            <div id="appGrid"></div>
+            <div class="searchpill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Search</div>
+            <div class="dock" id="dock"></div>
+            <div class="dim" id="dim" style="display:none"></div>
+          </div>
+
+          <!-- ===== PERMISSION (Step 1) ===== -->
+          <div class="layer" id="perm">
+            <div class="permcard">
+              <svg class="spark" width="40" height="40" viewBox="0 0 40 40"><use href="#i-spark"/></svg>
+              <h2>Can I use your <span class="lav">app-usage history</span> to personalize your limits and reminders?</h2>
+              <p>The data is used locally for patterns such as app duration and time of day.</p>
+              <div class="permchips">
+                <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b590ff" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M10 18h4"/></svg>Processed locally on your device</div>
+                <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b590ff" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18M10.6 5.1A9.9 9.9 0 0 1 12 5c5 0 9 4.5 10 7a13 13 0 0 1-3 4.2M6.1 6.2A13 13 0 0 0 2 12c1 2.5 5 7 10 7 1.6 0 3-.4 4.3-1"/></svg>I cannot see your screen content</div>
+              </div>
+              <div class="s1btns" style="margin-top:20px">
+                <button class="btn-lav" data-act="permAllow">Allow</button>
+                <button class="btn-ghost" data-act="permNo">Not now</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 1 INTENT CHECK ===== -->
+          <div class="layer" id="s1">
+            <div class="s1card">
+              <svg class="spark" width="37" height="37" viewBox="0 0 40 40"><use href="#i-spark"/></svg>
+              <h2>You’re about to open<br><span class="lav app-name">Instagram</span>.<br>Is this intentional?</h2>
+              <div class="s1btns">
+                <button class="btn-lav" data-act="s1Yes">Yes</button>
+                <button class="btn-ghost" data-act="s1No">Not really</button>
+              </div>
+              <p class="s1foot">I can help you stay aligned with<br>what you came here to do.</p>
+            </div>
+          </div>
+
+          <!-- ===== 2 DECLARE INTENT ===== -->
+          <div class="layer fs s2" id="s2">
+            <svg class="spark ab" style="top:96px;left:50%;margin-left:-22px" width="44" height="44" viewBox="0 0 40 40"><use href="#i-spark"/></svg>
+            <h1 class="ab cx">What are you opening<br><span class="lav app-name">Instagram</span> to do?</h1>
+            <p class="ab cx sub" style="margin:0">Share what you have in mind. There’s no<br>right or wrong answer — this just helps<br>you stay intentional.</p>
+            <div class="orbwrap">
+              <div class="ring r3"></div><div class="ring r2"></div>
+              <div class="ring pulse" id="pulseA"></div><div class="ring pulse b" id="pulseB"></div>
+              <button class="orb" data-act="listen" aria-label="Speak your answer"><svg viewBox="0 0 24 24" fill="none" stroke="#f3edff" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3" fill="#f3edff" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3.5M8.5 21h7"/></svg></button>
+            </div>
+            <div class="ab cx listening" id="listenLbl">Listening...</div>
+            <div class="transcript">
+              <p id="transcript"></p>
+              <div class="wave live" id="wave2"></div>
+            </div>
+            <div class="typebar">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a9a5b8" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1-4.5L15.8 4.7a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8L8.5 19 4 20z"/><path d="M14 6.5l3.5 3.5"/></svg>
+              <input id="typeIn" placeholder="Or type your answer instead..." aria-label="Type your answer">
+              <button class="sendbtn" id="sendBtn" data-act="submitIntent" aria-label="Continue"><svg viewBox="0 0 24 24" fill="none" stroke="#cfcbdb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+
+          <!-- ===== 3 SESSION LENGTH ===== -->
+          <div class="layer fs s3" id="s3">
+            <svg class="spark ab" style="top:84px;left:50%;margin-left:-22px" width="44" height="44" viewBox="0 0 40 40"><use href="#i-spark"/></svg>
+            <h1 class="ab cx" id="s3title">We can use your<br><span class="lav">app-usage data</span><br>to personalize this.</h1>
+            <p class="ab cx sub" id="s3sub" style="margin:0">We’ll only use local Screen Time or<br>app-usage metadata on your device<br>to suggest a helpful session length.</p>
+            <div class="usage" id="usageCard">
+              <div class="tile"><svg width="28" height="28" viewBox="0 0 24 24"><rect x="3" y="12" width="4.2" height="9" rx="2" fill="#b590ff"/><rect x="9.9" y="7.5" width="4.2" height="13.5" rx="2" fill="#b590ff"/><rect x="16.8" y="3" width="4.2" height="18" rx="2" fill="#b590ff"/></svg></div>
+              <p>Similar <span class="app-name">Instagram</span> sessions usually take you around<b>8–10 minutes.</b></p>
+            </div>
+            <div class="ab cx q" id="s3q">How long would you like<br>this session to be?</div>
+            <div class="recrow" id="recRow">
+              <button class="step" data-act="minus" aria-label="Less time">−</button>
+              <div class="recbox"><small id="recLbl">RECOMMENDED</small><strong id="recVal">10 min</strong></div>
+              <button class="step" data-act="plus" aria-label="More time">+</button>
+            </div>
+            <div class="ab cx foot3" id="foot3"><svg width="16" height="16" viewBox="0 0 24 24"><rect x="3" y="12" width="4.2" height="9" rx="1.6" fill="#a983ff"/><rect x="9.9" y="7.5" width="4.2" height="13.5" rx="1.6" fill="#a983ff"/><rect x="16.8" y="3" width="4.2" height="18" rx="1.6" fill="#a983ff"/></svg>Based on local app-usage history.</div>
+            <button class="bigbtn b-set" id="setBtn" data-act="setTime">Set 10 min</button>
+            <button class="bigbtn b-change" id="changeBtn" data-act="changeTime">Change time</button>
+          </div>
+
+          <!-- ===== FEED (original social app) ===== -->
+          <div class="layer" id="feed">
+            <div class="fhead">
+              <div class="wordmark"><svg viewBox="0 0 44 44"><use href="#i-Instagram"/></svg><span class="app-name-lc">Instagram</span></div>
+              <div style="display:flex;gap:18px">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M12 20.5s-8-4.7-8-10.6A4.4 4.4 0 0 1 12 7.4a4.4 4.4 0 0 1 8 2.5c0 5.9-8 10.6-8 10.6z"/></svg>
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>
+              </div>
+            </div>
+            <div class="fcompose"><i class="me2"></i>Share something with your friends…<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b8b97" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3.5"/><path d="M4 17l5-5.5 4 4 2.5-2.5L20 17.5"/><circle cx="16" cy="8.5" r="1.6" fill="#8b8b97" stroke="none"/></svg></div>
+            <div class="ftabs"><span class="on">For you</span><span>Following</span><span>Nearby</span></div>
+            <div class="stories">
+              <div class="story me"><div class="av"><span style="background:linear-gradient(160deg,#f6b26b,#6d4a7a)">🌄</span><div class="plus">+</div></div><small>Your story</small></div>
+              <div class="story"><div class="av"><span style="background:linear-gradient(160deg,#e7c9a9,#8a6a55)">🏛️</span></div><small>lisa.km</small></div>
+              <div class="story"><div class="av"><span style="background:linear-gradient(160deg,#a7c3e8,#4b6385)">🏔️</span></div><small>marc.bd</small></div>
+              <div class="story"><div class="av"><span style="background:linear-gradient(160deg,#f3d7a1,#b9894a)">🐶</span></div><small>soph.iee</small></div>
+              <div class="story"><div class="av"><span style="background:linear-gradient(160deg,#9fd3e0,#3f6f87)">🌊</span></div><small>alex.r</small></div>
+            </div>
+            <div class="post-h">
+              <div class="pav">⛰️</div>
+              <div><b>alpine.frames <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2dd4bf"/><path d="M7.5 12.3l3 3 6-6.3" stroke="#062a26" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></b><small>Dolomites, Italy</small></div>
+              <svg style="margin-left:auto" width="22" height="22" viewBox="0 0 24 24" fill="#fff"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+            </div>
+            <div class="post-img"><svg viewBox="0 0 400 318" preserveAspectRatio="xMidYMid slice"><use href="#i-landscape"/></svg><div class="count">1/5</div></div>
+            <div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="actions">
+              <span><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M12 20.5s-8-4.7-8-10.6A4.4 4.4 0 0 1 12 7.4a4.4 4.4 0 0 1 8 2.5c0 5.9-8 10.6-8 10.6z"/></svg>142K</span>
+              <span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>321</span>
+              <span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M4 12l16-8-6 17-3-7z"/></svg>4,892</span>
+              <svg class="sv" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><path d="M6 3.5h12v17l-6-4.5-6 4.5z"/></svg>
+            </div>
+            <div class="caption"><b>alpine.frames</b> Golden hour in the Dolomites 🌅 <em>... more</em><br><em>View all comments</em></div>
+            <div class="fnav">
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></span>
+              <span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+              <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="#fff"/></svg></span>
+              <span><i class="me"></i></span>
+            </div>
+
+            <!-- 4 REMINDER BANNER -->
+            <div class="banner" id="banner" role="alert">
+              <div class="bn-top">
+                <svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg>
+                <div style="flex:1;min-width:0">
+                  <div class="t1">Focus Assistant<small>now</small></div>
+                  <h3>1 minute left on <span class="app-name">Instagram</span>.</h3>
+                  <p id="bnText">You came here to check notifications, reply to friends and briefly check what’s new. Still on track?</p>
+                </div>
+              </div>
+              <div class="bn-btns">
+                <button class="bn-done" data-act="bnDone">I’m done</button>
+                <button class="bn-more" data-act="bnMore">Need more time</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 5 TIME'S UP ===== -->
+          <div class="layer fa s5" id="s5">
+            <div class="fahead" style="top:74px"><svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg><b>Focus Assistant</b><button class="xbtn" data-act="s5X" aria-label="Dismiss"><svg viewBox="0 0 24 24" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>
+            <div class="hg"><svg width="66" height="66" viewBox="0 0 66 66"><use href="#i-hourglass"/></svg></div>
+            <h1 class="ab cx" style="top:289px">Your planned<br><span class="lav"><span class="app-name">Instagram</span> time is up.</span></h1>
+            <div class="intent" style="top:371px;height:99px">
+              <svg class="oico" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg>
+              <div><div class="lbl">Your intention</div><p class="intent-long">You opened Instagram to check notifications, reply to friends and briefly check what’s new.</p></div>
+            </div>
+            <div class="ab cx" style="top:494px;font-size:16.5px;font-weight:600">What would you like to do now?</div>
+            <button class="opt" style="top:532px" data-act="s5Done"><span class="tl"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16.2 9.4"/></svg></span><span><b>I’m finished</b><small>Close <span class="app-name">Instagram</span> for now.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <button class="opt hi" style="top:610px" data-act="s5More"><span class="tl"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2.2"/></svg></span><span><b>I need more time</b><small>Set an extension (e.g. 5 or 10 min).</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <button class="opt" style="top:689px" data-act="s5Cont"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M9 6h9v9"/></svg></span><span><b>I intentionally want to continue</b><small>Let me keep using <span class="app-name">Instagram</span>.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <div class="ffoot" style="top:820px"><svg width="26" height="28" viewBox="0 0 24 26"><use href="#i-leaf"/></svg><div><b>You’re in control.</b><br>This is here to help you use social media more intentionally.</div></div>
+          </div>
+
+          <!-- ===== 6 PAUSED ===== -->
+          <div class="layer fa s6" id="s6">
+            <div class="fahead" style="top:63px"><svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg><b>Focus Assistant</b><button class="xbtn" data-act="s6X" aria-label="Dismiss"><svg viewBox="0 0 24 24" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>
+            <div class="pz"><div class="ring a"></div><div class="ring b2"></div>
+              <svg class="big" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg>
+              <div class="pb"><svg width="12" height="13" viewBox="0 0 12 13"><rect x="1" y="1" width="3.3" height="11" rx="1.2" fill="#d8c8ff"/><rect x="7.7" y="1" width="3.3" height="11" rx="1.2" fill="#d8c8ff"/></svg></div>
+            </div>
+            <h1 class="ab cx" style="top:228px;font-size:26.5px;line-height:33.5px"><span class="app-name">Instagram</span> is paused<br><span class="lav">for now.</span></h1>
+            <div class="intent" style="top:305px;height:79px;gap:18px;padding-left:24px">
+              <span style="width:43px;height:43px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e8e6ef" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg></span>
+              <div><div class="lbl caps">YOUR INTENTION</div><p class="intent-cap">Check notifications, reply to friends and briefly check what’s new.</p></div>
+            </div>
+            <div class="asst">
+              <span class="avfa"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#i-faglyph"/></svg></span>
+              <div class="bubble"><p>Tell me what you want to do next.</p><small>You can speak or choose an option below.</small></div>
+            </div>
+            <button class="mic2" data-act="s6Explain" aria-label="Tap to speak"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3" fill="#fff" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v3.5M8.5 21h7"/></svg></button>
+            <div class="ab cx" style="top:567px;font-size:14px;color:#a5a1b5">Tap to speak</div>
+            <button class="opt" style="top:596px" data-act="s6Explain"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-1 0-2-.1-2.9-.4L4.5 19.5l1.2-3.6C4.3 14.6 3.5 12.9 3.5 11c0-3.9 3.8-7 8.5-7z"/></svg></span><span><b>Explain why I need more time</b><small>Tell me your reason and I’ll decide.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <button class="opt" style="top:666px" data-act="s6Close"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg></span><span><b>Close <span class="app-name">Instagram</span></b><small>I’m done for now.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#c9c5d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <button class="opt hi" style="top:735px" data-act="s6Cont"><span class="tl"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5.5 3.5-5.5 3.5z"/></svg></span><span><b>Continue intentionally</b><small>I still want to use <span class="app-name">Instagram</span>.</small></span><svg class="chev" width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <div class="ffoot" style="top:823px"><svg width="26" height="28" viewBox="0 0 24 26"><use href="#i-leaf"/></svg><div>This is a temporary pause to help you stay aligned<br>with your goals. You’re in control.</div></div>
+          </div>
+
+          <!-- ===== 7 ACCOUNTABILITY / EXTENDED ===== -->
+          <div class="layer fa s7" id="s7">
+            <div class="fahead" style="top:66px"><svg class="faic" style="width:40px;height:40px;border-radius:11px" viewBox="0 0 38 38"><use href="#i-fa"/></svg><div><b>Focus Assistant</b><small id="s7status">Listening...</small></div><button class="xbtn" data-act="s7X" aria-label="Dismiss"><svg viewBox="0 0 24 24" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>
+            <div class="chat-u" id="chatU"><p id="userSaid"></p><div class="wave live" id="wave7"></div></div>
+            <div class="uav" id="uav"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e6e4ee"><circle cx="12" cy="8" r="4.3"/><path d="M3.8 21c.6-4.3 4-7 8.2-7s7.6 2.7 8.2 7z"/></svg></div>
+            <div class="chat-a" id="chatA"><span class="avfa"><svg width="24" height="24" viewBox="0 0 24 24"><use href="#i-faglyph"/></svg></span><div class="bubble"><p id="asstSaid">Okay. I’ll extend this session by 5 minutes and check in again afterwards.</p><div class="chips" id="goalChips" style="display:none"><button data-act="gStop">Stop now</button><button class="p" data-act="gFive">5 intentional min</button><button data-act="gSwitch">Switch activity</button></div></div></div>
+            <div class="ext fadein" id="extCard">
+              <div class="ck"><svg width="82" height="82" viewBox="0 0 82 82"><use href="#i-clockplus"/></svg>
+                <svg style="position:absolute;left:-40px;top:14px" width="22" height="50" viewBox="0 0 22 50" stroke="#9c74ff" stroke-width="2.6" stroke-linecap="round"><path d="M4 10l12 5M4 40l12-5"/></svg>
+                <svg style="position:absolute;right:-40px;top:14px" width="22" height="50" viewBox="0 0 22 50" stroke="#9c74ff" stroke-width="2.6" stroke-linecap="round"><path d="M18 10L6 15M18 40L6 35"/></svg>
+              </div>
+              <strong>+5 min</strong>
+              <p>Your <span class="app-name">Instagram</span> session has been<br>extended by 5 minutes.</p>
+            </div>
+            <div class="intent7 fadein" id="intent7">
+              <div class="top"><svg class="oico" viewBox="0 0 44 44"><use href="#i-Instagram"/></svg><div><div class="lbl">YOUR ORIGINAL INTENTION</div><p class="intent-cap">Check notifications, reply to friends and briefly check what’s new.</p></div></div>
+              <button class="simrow" id="simRow" data-act="simInfo"><span class="cc"><svg width="17" height="17" viewBox="0 0 24 24"><rect x="3" y="12" width="4.2" height="9" rx="1.6" fill="#e3e0ec"/><rect x="9.9" y="7.5" width="4.2" height="13.5" rx="1.6" fill="#e3e0ec"/><rect x="16.8" y="3" width="4.2" height="18" rx="1.6" fill="#e3e0ec"/></svg></span><span>Similar sessions usually take<br>8–10 minutes.</span><svg style="margin-left:auto" width="9" height="15" viewBox="0 0 10 17" fill="none" stroke="#a5a1b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            </div>
+            <button class="b-cont fadein" id="contBtn" data-act="s7Cont">Continue on&nbsp;<span class="app-name">Instagram</span><svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l6 6.5L2 15"/></svg></button>
+            <button class="b-rem fadein" id="remBtn" data-act="s7Rem"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e8e6ef" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 21h4"/></svg>Set a reminder for 5 minutes</button>
+          </div>
+
+          <div class="toast" id="toast"><svg class="faic" viewBox="0 0 38 38"><use href="#i-fa"/></svg><span id="toastTxt"></span></div>
+          <div class="homebar" id="homebar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== facilitator panel ===== -->
+  <aside class="panel" aria-label="Study controls">
+    <div class="ptop">
+      <div><h2>Study controls</h2><p class="hint">Tap through the phone like a participant, or jump to any step. Press F to hide this panel.</p></div>
+      <button class="pbtn" data-act="hidePanel">Hide</button>
+    </div>
+    <h3>Flow</h3>
+    <ul class="flow" id="flowList"></ul>
+    <h3>Session</h3>
+    <div class="timer"><span>Session time left</span><b id="tLeft">–</b></div>
+    <h3>Step 6 assistant reply</h3>
+    <div class="seg" id="s6Seg">
+      <button class="pbtn on" data-mode="extend">Extend by 5 min</button>
+      <button class="pbtn" data-mode="goal">Remind of goal</button>
+    </div>
+    <h3>Ask the participant: was the timing too early, about right or too late?</h3>
+    <div class="rate" id="rate4"><div>After the 1-minute reminder (step 4)</div><div class="seg" data-rate="Reminder timing"><button class="pbtn">Too early</button><button class="pbtn">About right</button><button class="pbtn">Too late</button></div></div>
+    <div class="rate" id="rate5"><div>After the time’s-up prompt (step 5)</div><div class="seg" data-rate="Time’s-up timing"><button class="pbtn">Too early</button><button class="pbtn">About right</button><button class="pbtn">Too late</button></div></div>
+    <h3>Session log</h3>
+    <ul class="log" id="log"><li style="color:var(--ink-2)">Nothing recorded yet.</li></ul>
+    <div class="prow"><button class="pbtn" data-act="copyLog">Copy log</button><button class="pbtn" data-act="resetAll">Reset participant</button></div>
+  </aside>
+</div>
+<button class="pbtn showpanel" data-act="showPanel">Show study controls</button>
+
+<!-- ===== shared symbols ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-spark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dccbff"/><stop offset="1" stop-color="#9e6dff"/></linearGradient>
+    <linearGradient id="g-fa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8457ff"/><stop offset="1" stop-color="#5a2ce6"/></linearGradient>
+    <linearGradient id="g-Instagram" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/>
+</linearGradient>
+    <linearGradient id="g-hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb7ff"/><stop offset="1" stop-color="#8f63ff"/></linearGradient>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#434072"/><stop offset=".38" stop-color="#b2698a"/><stop offset=".62" stop-color="#f0a072"/><stop offset=".78" stop-color="#f6c48c"/></linearGradient>
+    <linearGradient id="g-meadow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d9a43"/><stop offset="1" stop-color="#3b5121"/></linearGradient>
+    <linearGradient id="g-rock" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c47b63"/><stop offset=".5" stop-color="#d9946f"/><stop offset="1" stop-color="#9a5a50"/></linearGradient>
+    <filter id="f-soft"><feGaussianBlur stdDeviation="1.6"/></filter>
+
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 0c.9 6.4 4.6 10.6 12 12-7.4 1.4-11.1 5.6-12 12-.9-6.4-4.6-10.6-12-12C7.4 10.6 11.1 6.4 12 0z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 40 40">
+      <g fill="url(#g-spark)">
+        <use href="#i-star" x="1" y="11" width="27" height="27"/>
+        <use href="#i-star" x="22" y="2" width="13" height="13"/>
+        <use href="#i-star" x="31" y="17" width="6" height="6"/>
+        <use href="#i-star" x="25" y="28" width="5" height="5"/>
+      </g>
+    </symbol>
+    <symbol id="i-faglyph" viewBox="0 0 24 24">
+      <g fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="8.2" r="4.6"/><circle cx="15.8" cy="12" r="4.6"/><circle cx="12" cy="15.8" r="4.6"/><circle cx="8.2" cy="12" r="4.6"/></g>
+    </symbol>
+    <symbol id="i-fa" viewBox="0 0 38 38"><rect width="38" height="38" rx="10" fill="url(#g-fa)"/><use href="#i-faglyph" x="7" y="7" width="24" height="24"/></symbol>
+    <symbol id="i-Instagram" viewBox="0 0 44 44"><rect width="44" height="44" rx="12" fill="url(#g-Instagram)"/><rect x="9" y="9" width="26" height="26" rx="7" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="22" cy="22" r="6" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="29.5" cy="14.5" r="1.8" fill="#fff"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 66 66">
+      <g stroke="#9b74ff" stroke-width="2.4" stroke-linecap="round"><path d="M2 22l7 3M2 38l7-3M64 22l-7 3M64 38l-7-3"/></g>
+      <rect x="18" y="8" width="30" height="5.5" rx="2.7" fill="url(#g-hg)"/>
+      <rect x="18" y="52.5" width="30" height="5.5" rx="2.7" fill="url(#g-hg)"/>
+      <path d="M21.5 13.5h23c0 9-5 13.5-8.5 16.5v2c3.5 3 8.5 7.5 8.5 20.5h-23c0-13 5-17.5 8.5-20.5v-2C26.5 27 21.5 22.5 21.5 13.5z" fill="rgba(170,135,255,.22)" stroke="url(#g-hg)" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M25 18.5h16c-.8 4.4-3.8 7.2-8 9.5-4.2-2.3-7.2-5.1-8-9.5z" fill="#b896ff"/>
+      <path d="M24.5 50c.5-5.4 3.4-8.6 8.5-11.2 5.1 2.6 8 5.8 8.5 11.2z" fill="#b896ff"/>
+    </symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 26"><g fill="none" stroke="#8d8aa0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 25V13"/><path d="M12 15c0-5 3.5-8.5 9.5-9-.2 6-3.8 9-9.5 9z"/><path d="M12 18C12 13.5 8.8 10.5 3 10c.2 5.3 3.6 8 9 8z"/></g></symbol>
+    <symbol id="i-clockplus" viewBox="0 0 82 82">
+      <circle cx="41" cy="41" r="39" fill="rgba(120,80,240,.18)" stroke="#8c62ff" stroke-width="2.4"/>
+      <circle cx="41" cy="41" r="26" fill="none" stroke="#d7c6ff" stroke-width="3.6"/>
+      <path d="M41 26v15l-8 6" fill="none" stroke="#d7c6ff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="61" cy="59" r="12" fill="#a882ff" stroke="#1d1834" stroke-width="3"/>
+      <path d="M61 53.5v11M55.5 59h11" stroke="#1d1834" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-landscape" viewBox="0 0 400 318">
+      <rect width="400" height="318" fill="url(#g-sky)"/>
+      <g fill="#f3b8a0" opacity=".55"><ellipse cx="70" cy="62" rx="70" ry="9"/><ellipse cx="300" cy="44" rx="90" ry="8"/><ellipse cx="210" cy="90" rx="60" ry="6"/></g>
+      <g fill="#e99a86" opacity=".45"><ellipse cx="350" cy="80" rx="55" ry="6"/><ellipse cx="120" cy="30" rx="50" ry="5"/></g>
+      <path d="M0 175l40-18 30 6 40-22 30 10 50-20 40 14 50-16 40 12 40-8 40 10v60H0z" fill="#6b5675" opacity=".75"/>
+      <path d="M70 190l18-62 10-6 8-36 12-8 8 30 10-24 10 6 6 32 12-46 14-10 10 18 6 38 10-12 14-22 10 4 10 30 12 6 8 22 12-30 10 10 8 34 20 20z" fill="url(#g-rock)"/>
+      <path d="M118 84l8 30 4 74H106l6-62zM184 48l10 18 2 112h-22zM248 98l10 30-2 60h-16zM300 120l8 34v34h-14z" fill="#7e4747" opacity=".55"/>
+      <path d="M130 114l10-24 10 6-6 92h-14zM198 66l6 38 10-12-4 96h-12z" fill="#f2b38a" opacity=".5"/>
+      <path d="M0 200c60-20 130-22 200-14s140 4 200-10v142H0z" fill="#2f4428"/>
+      <g fill="#1f3020"><path d="M8 205l9-26 9 26zM24 206l7-20 7 20zM300 196l8-24 8 24zM318 198l9-28 9 28zM340 196l7-20 7 20zM362 195l8-26 8 26zM382 196l8-22 8 22zM40 206l6-16 6 16z"/></g>
+      <path d="M0 226c80-26 190-26 270-12 50 8 90 6 130-2v106H0z" fill="url(#g-meadow)"/>
+      <g><rect x="196" y="230" width="34" height="18" fill="#5a3a26"/><path d="M192 232l21-14 21 14z" fill="#3e2719"/><rect x="246" y="236" width="20" height="11" fill="#5a3a26"/><path d="M243 238l13-9 13 9z" fill="#3e2719"/><rect x="160" y="236" width="16" height="9" fill="#5a3a26"/><path d="M157 238l11-7 11 7z" fill="#3e2719"/></g>
+      <g fill="#24361d"><path d="M290 240l7-22 7 22zM104 238l6-18 6 18zM120 240l5-15 5 15z"/></g>
+      <g filter="url(#f-soft)"><circle cx="40" cy="300" r="7" fill="#f4e7c8"/><circle cx="62" cy="292" r="5" fill="#f2c94c"/><circle cx="90" cy="306" r="6" fill="#f4e7c8"/><circle cx="18" cy="284" r="4" fill="#f2c94c"/><circle cx="130" cy="300" r="5" fill="#e9b949"/></g>
+      <g fill="#f2d68a"><circle cx="160" cy="280" r="1.6"/><circle cx="210" cy="290" r="1.6"/><circle cx="260" cy="276" r="1.4"/><circle cx="320" cy="296" r="1.8"/><circle cx="350" cy="270" r="1.4"/><circle cx="230" cy="306" r="1.8"/><circle cx="190" cy="268" r="1.3"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+(function(){
+"use strict";
+const APP = "Instagram";
+const DEFAULT_RAW = "Check notifications, reply to friends, and quickly see what’s new.";
+const DEFAULT_INTENT = "check notifications, reply to friends and briefly check what’s new";
+const STEPS = [1,2,3,5,8,10,15,20,25,30,45,60];
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------- home screen apps (all invented) ---------- */
+const G = {
+  gallery:'<rect x="3" y="4" width="18" height="16" rx="3.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M4 17l5-5.5 4 4 2.5-2.5L20 17.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><circle cx="16" cy="8.5" r="1.8" fill="#fff"/>',
+  camera:'<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h2L9 4h6l1.5 2h2A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z" fill="#d8dae0"/><circle cx="12" cy="12.5" r="3.8" fill="#2e3038"/><circle cx="12" cy="12.5" r="2" fill="#566"/>',
+  journal:'<rect x="5" y="3" width="14" height="18" rx="2.5" fill="none" stroke="#2b2a33" stroke-width="1.9"/><path d="M9 3v18M12 8h4.5M12 11.5h4.5" stroke="#2b2a33" stroke-width="1.9" stroke-linecap="round"/>',
+  clock:'<circle cx="12" cy="12" r="8.5" fill="#fff"/><path d="M12 7v5l3.5 2" stroke="#111" stroke-width="1.9" stroke-linecap="round" fill="none"/>',
+  fitness:'<path d="M13.5 2.5 6 13.5h5l-1.5 8 8-11.5h-5z" fill="#fff"/>',
+  books:'<path d="M3 5.5c3-1 6-1 9 .8 3-1.8 6-1.8 9-.8v13c-3-1-6-1-9 .8-3-1.8-6-1.8-9-.8z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 6.3v13" stroke="#fff" stroke-width="1.8"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="3" fill="#fff"/><rect x="4.5" y="3.8" width="15" height="4" rx="1.5" fill="#94a3b8"/><circle cx="16.5" cy="12.5" r="1.6" fill="#334155"/>',
+  podcasts:'<circle cx="12" cy="9" r="2.6" fill="#fff"/><path d="M10.5 13.5h3l-.6 7h-1.8z" fill="#fff"/><path d="M7 14.5a6.5 6.5 0 1 1 10 0" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  calculator:'<g fill="#fff"><rect x="5" y="4" width="14" height="4" rx="1.2" opacity=".85"/><circle cx="7.5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16.5" cy="12" r="1.5" fill="#fb923c"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="12" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5" fill="#fb923c"/></g>',
+  files:'<path d="M3 7a2 2 0 0 1 2-2h4.5l2 2.2H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#fff"/>',
+  tasks:'<rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="#3b2a05" stroke-width="2"/><path d="M8 12.2l2.8 2.8L16.3 9.3" fill="none" stroke="#3b2a05" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  translate:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.3 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.3-3.8-8.5S9.4 5.9 12 3.5z" fill="none" stroke="#fff" stroke-width="1.7"/>',
+  stocks:'<path d="M3.5 17l5-5.5 3.5 3 8-8.5" fill="none" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6h5v5" fill="none" stroke="#34d399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  reader:'<rect x="4" y="4" width="16" height="16" rx="2.5" fill="#fff"/><path d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5.5" stroke="#b91c1c" stroke-width="1.8" stroke-linecap="round"/>',
+  homeapp:'<path d="M3.5 11 12 4l8.5 7v8.5a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z" fill="#fff"/>',
+  tunes:'<path d="M9 17.5V6.5l10-2.5v11" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="6.8" cy="17.5" r="2.6" fill="#fff"/><circle cx="16.8" cy="15" r="2.6" fill="#fff"/>',
+  maps:'<path d="M3.5 6.5 9 4.5l6 2 5.5-2v13l-5.5 2-6-2-5.5 2z" fill="#fff" opacity=".95"/><path d="M9 4.5v13M15 6.5v13" stroke="#0d9488" stroke-width="1.5"/><circle cx="12" cy="11" r="2" fill="#f97316"/>',
+  clips:'<rect x="3" y="6" width="18" height="12" rx="3.5" fill="#fff"/><path d="M10.3 9.3l4.6 2.7-4.6 2.7z" fill="#4338ca"/>',
+  settings:'<circle cx="12" cy="12" r="7.6" fill="none" stroke="#fff" stroke-width="3.2" stroke-dasharray="2.7 2.27"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="2.1" fill="#fff"/>',
+  phone:'<path d="M6.6 3.5l2.4.3 1.2 3.4-1.7 1.4a11 11 0 0 0 6.9 6.9l1.4-1.7 3.4 1.2.3 2.4c-.1 1.2-1.1 2.1-2.3 2.1C10.4 19.5 4.5 13.6 4.5 5.8c0-1.2.9-2.2 2.1-2.3z" fill="#fff"/>',
+  mail:'<rect x="3" y="5.5" width="18" height="13" rx="2.5" fill="#fff"/><path d="M4 7l8 6 8-6" fill="none" stroke="#1d4ed8" stroke-width="1.7" stroke-linejoin="round"/>',
+  messages:'<path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-.9 0-1.8-.1-2.6-.3L5 19.5l1-3.4C4.5 14.8 3.5 13 3.5 11c0-3.9 3.8-7 8.5-7z" fill="#fff"/>',
+  browser:'<circle cx="12" cy="12" r="8.6" fill="#fff"/><path d="M15.8 8.2 13.2 13.2 8.2 15.8 10.8 10.8z" fill="#2563eb"/><circle cx="12" cy="12" r="1.2" fill="#fff"/>'
+};
+const LG = (a,b) => `linear-gradient(150deg,${a},${b})`;
+const ROWS = [
+  [["Gallery",LG("#ffb36b","#ff6f91"),"gallery"],["Camera",LG("#646875","#2e3038"),"camera"],["Instagram","","Instagram"],["Journal",LG("#f7f3ea","#d8d0bf"),"journal"]],
+  [["Clock","#121216","clock"],["Fitness",LG("#a3e635","#16a34a"),"fitness"],["Books",LG("#fdba74","#ea580c"),"books"],["Wallet",LG("#475569","#0f172a"),"wallet"]],
+  [["Podcasts",LG("#d8b4fe","#7e22ce"),"podcasts"],["Calculator",LG("#5b5b63","#27272a"),"calculator"],["Files",LG("#93c5fd","#2563eb"),"files"],["Tasks",LG("#fde047","#f59e0b"),"tasks"]],
+  [["Translate",LG("#7dd3fc","#0369a1"),"translate"],["Stocks",LG("#1e293b","#020617"),"stocks"],["Reader",LG("#fca5a5","#b91c1c"),"reader"],["Home",LG("#fdba74","#f59e0b"),"homeapp"]],
+  [["Tunes",LG("#fcd34d","#f97316"),"tunes"],["Maps",LG("#5eead4","#0d9488"),"maps"],["Clips",LG("#a5b4fc","#4338ca"),"clips"],["Settings",LG("#a1a1aa","#52525b"),"settings"]]
+];
+const DOCK = [["Phone",LG("#6ee7a0","#16a34a"),"phone"],["Mail",LG("#7cb4ff","#1d4ed8"),"mail"],["Messages",LG("#5eead4","#059669"),"messages"],["Browser",LG("#e0f2fe","#93c5fd"),"browser"]];
+const COLX = [20,109,204,297];
+function appHTML([name,bg,g],x,y,isDock){
+  const isT = g==="Instagram";
+  const inner = isT ? `<svg viewBox="0 0 44 44" style="width:61px;height:61px"><use href="#i-Instagram"/></svg>` : `<svg viewBox="0 0 24 24">${G[g]}</svg>`;
+  return `<button class="app${isT?' target':''}" ${isT?'data-act="openApp"':'tabindex="-1"'} style="left:${x}px;top:${y}px" aria-label="${name}"><span class="ic" style="${isT?'':'background:'+bg}">${inner}</span>${isDock?'':`<span class="nm">${name}</span>`}</button>`;
+}
+$("#appGrid").innerHTML = ROWS.map((row,ri)=>row.map((a,ci)=>appHTML(a,COLX[ci],250+ri*95)).join("")).join("");
+$("#dock").innerHTML = DOCK.map((a,ci)=>appHTML(a,COLX[ci]-7,15,true)).join("");
+
+function wave(el,n,max){ const h=[]; for(let i=0;i<n;i++){const c=1-Math.abs(i-(n-1)/2)/((n-1)/2); const v=Math.round(6+(max-6)*(0.35+0.65*c)*(0.6+0.4*Math.abs(Math.sin(i*1.7))));
+  h.push(`<i style="height:${v}px;opacity:${(.45+.55*c).toFixed(2)};animation-delay:${(i*0.07).toFixed(2)}s"></i>`);} el.innerHTML=h.join(""); }
+wave($("#wave2"),17,34); wave($("#wave7"),22,22);
+
+$$(".app-name").forEach(e=>e.textContent=APP);
+$$(".app-name-lc").forEach(e=>e.textContent=APP.toLowerCase());
+
+/* ---------- state ---------- */
+const S = { screen:"home", permission:null, raw:"", intent:DEFAULT_INTENT, minutes:10, editing:false, speed:1000,
+  remaining:null, unlimited:false, reminder:true, reminderShown:false, paused:false, step6:"extend", from7:"", log:[] };
+try{ const saved=JSON.parse(localStorage.getItem("fa-log")||"[]"); if(Array.isArray(saved)) S.log=saved; }catch(e){}
+
+const STATUS = { home:["9:41",0], perm:["9:41",0], s1:["9:41",0], s2:["9:41",0], s3:["9:41",0], feed:["21:46",1], s5:["21:56",1], s6:["21:57",1], s7:["21:58",1] };
+const FLOW = [["0","Home screen","home"],["P","Usage permission (step 1)","perm"],["1","Intent check","s1"],["2","Say what it's for","s2"],["3","Session length","s3"],["4","1-minute reminder","s4"],["5","Time's up","s5"],["6","Paused","s6"],["7","Extended after reason","s7"]];
+$("#flowList").innerHTML = FLOW.map(([n,l,k])=>`<li><button data-jump="${k}"><span>${n}</span>${l}</button></li>`).join("");
+
+function setScreen(k){
+  S.screen=k;
+  const overHome = (k==="perm"||k==="s1");
+  $("#dim").style.display = overHome ? "block":"none";
+  ["perm","s1","s2","s3","s5","s6","s7"].forEach(id=>$("#"+id).classList.toggle("on",id===k));
+  const feedOn = ["feed","s5","s6","s7"].includes(k);
+  $("#feed").classList.toggle("on",feedOn);
+  $("#home").classList.toggle("on", k==="home"||overHome);
+  if(k!=="feed") hideBanner(false);
+  const [t,b]=STATUS[k]; $("#sbTime").textContent=t; $("#battFull").style.display=b?"none":""; $("#batt78").style.display=b?"inline-flex":"none";
+  $("#homebar").classList.toggle("on",feedOn);
+  markFlow(k);
+}
+function markFlow(k){ $$("#flowList button").forEach(btn=>btn.classList.toggle("cur", btn.dataset.jump===k)); }
+
+/* ---------- helpers ---------- */
+function clockStr(){ return new Date().toTimeString().slice(0,8); }
+function log(msg){ S.log.push({t:clockStr(),msg}); try{localStorage.setItem("fa-log",JSON.stringify(S.log));}catch(e){} renderLog(); }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+function renderLog(){ const el=$("#log"); if(!S.log.length){el.innerHTML='<li style="color:var(--ink-2)">Nothing recorded yet.</li>';return;}
+  el.innerHTML=S.log.map(x=>`<li><time>${x.t}</time>${esc(x.msg)}</li>`).join(""); el.scrollTop=el.scrollHeight; }
+let toastT; function toast(msg){ $("#toastTxt").textContent=msg; $("#toast").classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.remove("on"),2800); }
+function askRate(id){ $("#"+id).classList.add("ask"); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function normIntent(raw){
+  if(!raw || raw.trim()===DEFAULT_RAW) return DEFAULT_INTENT;
+  let s=raw.trim().replace(/[.!?\s]+$/,"");
+  s=s.replace(/^(i\s*(want|need|wanna|am going|'m going|’m going)\s*(to\s+)?|i'?m\s+|i’m\s+|just\s+|to\s+)/i,"");
+  return s.charAt(0).toLowerCase()+s.slice(1);
+}
+function applyIntent(){
+  const i=S.intent;
+  $("#bnText").textContent=`You came here to ${i}. Still on track?`;
+  $$(".intent-long").forEach(e=>e.textContent=`You opened ${APP} to ${i}.`);
+  $$(".intent-cap").forEach(e=>e.textContent=cap(i)+".");
+}
+function fmt(min){ if(S.unlimited) return "No limit"; if(min==null) return "–"; const s=Math.max(0,Math.round(min*60)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+/* ---------- step 2: simulated voice ---------- */
+let typeTimer=null, typeStart=null;
+function startListening(){
+  clearInterval(typeTimer); clearTimeout(typeStart); const p=$("#transcript"); let i=0; S.raw="";
+  $("#listenLbl").textContent="Listening..."; $("#wave2").classList.add("live"); $("#sendBtn").classList.remove("ready");
+  $("#pulseA").style.display=$("#pulseB").style.display="";
+  p.innerHTML='<span class="caret"></span>';
+  typeStart=setTimeout(()=>{ typeTimer=setInterval(()=>{ i++; S.raw=DEFAULT_RAW.slice(0,i);
+      p.innerHTML="“"+esc(S.raw)+(i<DEFAULT_RAW.length?'<span class="caret"></span>':"”");
+      if(i>=DEFAULT_RAW.length){ clearInterval(typeTimer); $("#sendBtn").classList.add("ready"); }
+    },38); },500);
+}
+function submitIntent(){
+  const typed=$("#typeIn").value.trim();
+  if(!typed && !S.raw){ toast("Say or type what you’re opening "+APP+" for."); return; }
+  clearInterval(typeTimer); clearTimeout(typeStart);
+  S.intent=normIntent(typed||DEFAULT_RAW); applyIntent();
+  log(`Intent${typed?" (typed)":" (voice)"}: “${typed||DEFAULT_RAW}”`);
+  go("s3");
+}
+
+/* ---------- step 3 ---------- */
+function renderS3(){
+  const allowed = S.permission!=="notnow";
+  $("#usageCard").style.display=allowed?"":"none";
+  $("#foot3").style.display=allowed?"":"none";
+  $("#s3title").innerHTML = allowed ? 'We can use your<br><span class="lav">app-usage data</span><br>to personalize this.' : 'How long do you<br>think you need?';
+  $("#s3title").style.top = allowed ? "144px":"190px";
+  $("#s3sub").innerHTML = allowed ? "We’ll only use local Screen Time or<br>app-usage metadata on your device<br>to suggest a helpful session length." : "Pick a session length. I’ll check in<br>a minute before it ends.";
+  $("#s3sub").style.top = allowed ? "258px":"280px";
+  $("#s3q").style.display = allowed ? "":"none";
+  $("#recRow").style.top = allowed ? "569px":"420px";
+  $("#recLbl").textContent = S.editing ? "YOUR TIME" : (allowed ? "RECOMMENDED" : "YOUR ESTIMATE");
+  $("#recVal").textContent = S.minutes+" min";
+  $("#setBtn").textContent = "Set "+S.minutes+" min";
+  $("#recRow").classList.toggle("editing", S.editing || !allowed);
+  $("#changeBtn").textContent = S.editing ? (allowed?"Use recommended":"Reset to 10 min") : "Change time";
+  $("#changeBtn").style.display = (!allowed && !S.editing) ? "none" : "";
+}
+function stepMin(d){ let i=STEPS.indexOf(S.minutes); if(i<0)i=5; i=Math.min(STEPS.length-1,Math.max(0,i+d)); S.minutes=STEPS[i]; renderS3(); }
+
+/* ---------- session ---------- */
+function startSession(min){ S.remaining=min; S.unlimited=false; S.reminder=true; S.reminderShown=false; S.paused=false; go("feed"); }
+let bannerT=null;
+function showBanner(){
+  S.reminderShown=true; $("#banner").classList.add("on"); log("Reminder shown (1 minute left)"); markFlow("s4");
+  clearTimeout(bannerT); bannerT=setTimeout(()=>hideBanner(true),9000);
+}
+function hideBanner(ignored){ if(!$("#banner").classList.contains("on")) return; $("#banner").classList.remove("on"); clearTimeout(bannerT);
+  if(S.screen==="feed") markFlow("feed");
+  if(ignored){ log("Reminder ignored — kept scrolling"); askRate("rate4"); } }
+function timeUp(){ hideBanner(false); S.remaining=0; log("Time’s up prompt shown"); askRate("rate5"); go("s5"); }
+function closeApp(msg,logMsg){ S.remaining=null; S.unlimited=false; S.paused=false; log(logMsg); go("home"); toast(msg); }
+function continueUnlimited(src){ S.unlimited=true; S.paused=false; log(`Continued intentionally (${src})`); go("feed"); toast("Okay — no more check-ins this session."); }
+
+let last=performance.now();
+function tick(now){
+  const dt=Math.min(now-last,500); last=now;
+  if(S.screen==="feed" && S.remaining!=null && !S.unlimited){
+    S.remaining -= dt/S.speed;
+    if(S.reminder && !S.reminderShown && S.remaining<=1 && S.remaining>0) showBanner();
+    if(S.remaining<=0) timeUp();
+  }
+  $("#tLeft").textContent = fmt(S.remaining);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ---------- step 6/7 conversation ---------- */
+let seqT=[];
+function clearSeq(){ seqT.forEach(t=>{clearTimeout(t);clearInterval(t);}); seqT=[]; }
+function at(ms,fn){ seqT.push(setTimeout(fn,ms)); }
+function runS7(){
+  clearSeq();
+  const goal = S.step6==="goal";
+  const said = goal ? "I just want to keep scrolling for a bit." : "I’m still talking to a friend, give me five more minutes.";
+  ["chatU","uav","chatA","extCard","intent7","contBtn","remBtn"].forEach(id=>$("#"+id).classList.remove("show"));
+  $("#goalChips").style.display="none";
+  $("#s7status").textContent="Listening...";
+  const noPerm = S.permission==="notnow";
+  $("#simRow").style.display = noPerm ? "none":"";
+  $("#intent7").style.height = noPerm ? "86px":"";
+  $("#asstSaid").textContent = goal ? "You told me you want to avoid unplanned scrolling before bed. Stop now, allow 5 intentional minutes, or switch activity?" : "Okay. I’ll extend this session by 5 minutes and check in again afterwards.";
+  const p=$("#userSaid"); p.textContent=""; $("#wave7").classList.add("live");
+  at(250,()=>{ $("#chatU").classList.add("show"); $("#uav").classList.add("show"); });
+  let i=0; at(450,()=>{ const iv=setInterval(()=>{ i++; p.textContent=said.slice(0,i); if(i>=said.length) clearInterval(iv); },30); seqT.push(iv); });
+  const tEnd=450+said.length*30;
+  at(tEnd+200,()=>log(`Reason given: “${said}”`));
+  if(!goal){ at(tEnd+500,()=>$("#chatA").classList.add("show")); at(tEnd+1000,showExtension); }
+  else at(tEnd+500,()=>{ $("#chatA").classList.add("show"); $("#goalChips").style.display="flex"; });
+}
+function showExtension(){
+  ["extCard","intent7","contBtn","remBtn"].forEach((id,k)=>seqT.push(setTimeout(()=>$("#"+id).classList.add("show"),k*120)));
+  log("Assistant extended the session by 5 minutes");
+}
+function extend(withReminder){
+  S.remaining = Math.max(0,S.remaining||0)+5; S.unlimited=false; S.reminder=withReminder; S.reminderShown=false; S.paused=false;
+  log(withReminder?"Extension: set a reminder for 5 minutes":"Extension: continue on "+APP);
+  go("feed"); if(withReminder) toast("Reminder set — I’ll nudge you 1 minute before the end.");
+}
+
+/* ---------- navigation ---------- */
+function go(k){
+  if(k==="s2"){ $("#typeIn").value=""; startListening(); } else { clearInterval(typeTimer); clearTimeout(typeStart); }
+  if(k==="s3"){ S.editing=false; renderS3(); }
+  if(k!=="s7") clearSeq();
+  setScreen(k);
+  if(k==="s7") runS7();
+}
+function jump(k){
+  $$(".rate").forEach(r=>r.classList.remove("ask"));
+  if(k==="s4"){ if(S.remaining==null||S.remaining>1) S.remaining=1; S.unlimited=false; S.reminder=true; S.reminderShown=true; go("feed"); showBanner(); return; }
+  if(k==="s5") S.remaining=0;
+  if(k==="s6") S.paused=true;
+  if(k==="home"){ S.remaining=null; S.paused=false; S.unlimited=false; }
+  go(k);
+}
+
+const ACT = {
+  openApp(){
+    if(S.paused){ log("Reopened "+APP+" — still paused"); go("s6"); return; }
+    if(S.unlimited || (S.remaining!=null && S.remaining>0)){ go("feed"); return; }
+    go(S.permission===null ? "perm" : "s1");
+  },
+  permAllow(){ S.permission="allow"; log("Permission: Allow"); go("s1"); },
+  permNo(){ S.permission="notnow"; log("Permission: Not now — declared intent only"); go("s1"); },
+  s1Yes(){ log("Intentional: Yes"); go("s2"); },
+  s1No(){ log("Intentional: Not really — app not opened"); go("home"); toast("No problem. "+APP+" stays closed."); },
+  listen(){ $("#typeIn").value=""; startListening(); },
+  submitIntent,
+  minus(){ S.editing=true; stepMin(-1); }, plus(){ S.editing=true; stepMin(1); },
+  changeTime(){ if(S.editing){ S.editing=false; S.minutes=10; } else S.editing=true; renderS3(); },
+  setTime(){ log(`Session set: ${S.minutes} min ${S.editing?"(changed by participant)":S.permission==="notnow"?"(participant estimate)":"(accepted recommendation)"}`); startSession(S.minutes); },
+  bnDone(){ hideBanner(false); askRate("rate4"); closeApp("Nice — "+APP+" closed. You stayed on track.","Reminder: I’m done"); },
+  bnMore(){ hideBanner(false); askRate("rate4"); log("Reminder: Need more time"); go("s7"); },
+  s5Done(){ closeApp(APP+" closed. Nice work sticking to your plan.","Time’s up: I’m finished"); },
+  s5More(){ log("Time’s up: I need more time"); go("s7"); },
+  s5Cont(){ continueUnlimited("time’s up prompt"); },
+  s5X(){ log("Time’s up prompt ignored — "+APP+" paused"); S.paused=true; go("s6"); },
+  s6Explain(){ log("Paused: explain why"); go("s7"); },
+  s6Close(){ closeApp(APP+" closed. See you next time.","Paused: Close "+APP); },
+  s6Cont(){ continueUnlimited("pause screen"); },
+  s6X(){ log("Pause screen dismissed — "+APP+" stays paused"); go("home"); toast(APP+" stays paused until you choose what to do."); },
+  s7X(){ log("Conversation dismissed — "+APP+" paused"); S.paused=true; go("s6"); },
+  s7Cont(){ extend(false); }, s7Rem(){ extend(true); },
+  simInfo(){ toast("Based on local app-usage history from similar sessions."); },
+  gStop(){ closeApp(APP+" closed. Sleep well.","Goal reminder: Stop now"); },
+  gFive(){ $("#goalChips").style.display="none"; $("#asstSaid").textContent="Okay. 5 intentional minutes, then I’ll check in again."; showExtension(); },
+  gSwitch(){ closeApp("Good call — "+APP+" closed so you can switch.","Goal reminder: Switch activity"); },
+  hidePanel(){ document.body.classList.add("nopanel"); fit(); }, showPanel(){ document.body.classList.remove("nopanel"); fit(); },
+  copyLog(){ const txt=S.log.map(x=>x.t+"  "+x.msg).join("\n")||"(empty)";
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast("Log copied."),()=>{ const r=document.createRange(); r.selectNodeContents($("#log")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("Log selected — press Ctrl/Cmd+C to copy."); }); },
+  resetAll(){ Object.assign(S,{permission:null,remaining:null,unlimited:false,paused:false,intent:DEFAULT_INTENT,minutes:10,log:[]}); try{localStorage.removeItem("fa-log");}catch(e){} applyIntent(); renderLog();
+    $$(".rate").forEach(r=>{r.classList.remove("ask"); r.querySelectorAll("button").forEach(b=>b.classList.remove("on"));}); go("home"); }
+};
+
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-act]"); if(a && ACT[a.dataset.act]){ ACT[a.dataset.act](); return; }
+  const j=e.target.closest("[data-jump]"); if(j){ jump(j.dataset.jump); return; }
+  const md=e.target.closest("[data-mode]"); if(md){ S.step6=md.dataset.mode; $$("#s6Seg button").forEach(b=>b.classList.toggle("on",b===md)); return; }
+  const rt=e.target.closest("[data-rate] button"); if(rt){ const grp=rt.parentElement; grp.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===rt)); grp.parentElement.classList.remove("ask"); log(`${grp.dataset.rate}: ${rt.textContent}`); return; }
+  if(S.screen==="feed" && $("#banner").classList.contains("on") && e.target.closest("#feed") && !e.target.closest("#banner")) hideBanner(true);
+});
+$("#typeIn").addEventListener("input",()=>{ if($("#typeIn").value.trim()){ clearInterval(typeTimer); clearTimeout(typeStart); $("#sendBtn").classList.add("ready"); $("#listenLbl").textContent="Typing..."; $("#wave2").classList.remove("live"); $("#pulseA").style.display=$("#pulseB").style.display="none"; } });
+$("#typeIn").addEventListener("keydown",e=>{ if(e.key==="Enter") submitIntent(); });
+document.addEventListener("keydown",e=>{ if(e.target.tagName==="INPUT") return; if(e.key==="f"||e.key==="F"){ document.body.classList.toggle("nopanel"); fit(); } });
+
+/* ---------- scale phone to viewport ---------- */
+function fit(){
+  const slot=$("#slot"), sc=$("#scaler"); const W=419,H=906;
+  const narrow = innerWidth<=820;
+  const panelW = (document.body.classList.contains("nopanel")||narrow)?0:368;
+  const availW = innerWidth-32-panelW;
+  const availH = narrow ? innerHeight*0.94 : innerHeight-32;
+  const s = Math.max(.3, Math.min(1.15, availW/W, availH/H));
+  sc.style.transform=`scale(${s})`; slot.style.width=W*s+"px"; slot.style.height=H*s+"px";
+}
+addEventListener("resize",fit); fit();
+
+applyIntent(); renderLog(); setScreen("home");
+window.__jump=jump; window.__S=S; window.__ACT=ACT;
+})();
+</script>
+</body>
+</html>
